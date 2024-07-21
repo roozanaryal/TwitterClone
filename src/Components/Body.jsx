@@ -11,35 +11,6 @@ const Body = () => {
          path: "/",
          element: <Home />,
            children: [
-         
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
             {
                path: "/",
                element: <Feed />,

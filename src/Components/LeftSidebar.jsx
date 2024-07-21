@@ -14,9 +14,8 @@ const LeftSidebar = () => {
             <div>
                <div>
                   <img
-                     className="ml-5"
-                     width={"24px"}
-                     src="https://imgs.search.brave.com/x_qIHyAASAKHvFxd_4SV47FKtDr6Ft6gFuk9G1wPD98/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9mcmVl/cG5nbG9nby5jb20v/aW1hZ2VzL2FsbF9p/bWcvMTY5MTgzMjQ2/MHgtdHdpdHRlci1s/b2dvLXBuZy5wbmc"
+                     className="ml-5 h-11"
+                     src="https://imgs.search.brave.com/ZhDTc19u3Xv8PyZhNmN3n3svlp1Wr_pndpywRRjXxjU/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly8xMDAw/bG9nb3MubmV0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDE3LzA2/L1R3aXR0ZXItTG9n/JUQwJUJFLTUwMHgy/ODEucG5n"
                      alt="Twitter-Logo"
                   />
                </div>
