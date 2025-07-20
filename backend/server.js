@@ -15,6 +15,7 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+const app = express();
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -28,8 +29,8 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/users", userRoutes);
+// app.use("/api/messages", messageRoutes);
+// app.use("/api/users", userRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
