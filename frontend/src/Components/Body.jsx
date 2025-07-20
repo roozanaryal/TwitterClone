@@ -1,5 +1,4 @@
-import React from "react";
-import { createBrowserRouter, Router, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Home";
 import Login from "./Login";
 import Feed from "./Feed";

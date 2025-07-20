@@ -1,7 +1,5 @@
-import React from "react";
 import Avatar from "react-avatar";
 import { FaRegComment } from "react-icons/fa";
-import { MdOutlineDeleteOutline } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
 import { CiBookmark } from "react-icons/ci";
 

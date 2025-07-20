@@ -1,4 +1,3 @@
-import React from "react";
 import CreatePost from "./CreatePost";
 import Tweet from "./Tweet";
 
