@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
-// import bcrypt from "bcryptjs";
-// import { generateToken } from "../utils/generateToken.js";
+import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
@@ -32,14 +32,19 @@ export const signup = async (req, res) => {
 
     if (newUser) {
       await newUser.save();
-      //   const token = generateToken(newUser._id);
 
+      const token = generateToken(newUser._id);
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
       res.status(201).json({
         _id: newUser._id,
         name: newUser.name,
         username: newUser.username,
         email: newUser.email,
-        // token,
       });
     } else {
       res.status(400).json({ error: "Invalid user data" });
@@ -79,12 +84,16 @@ export const login = async (req, res) => {
     console.log(user);
 
     const token = generateToken(user._id);
-
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
     res.status(200).json({
       _id: user._id,
       name: user.name,
       username: user.username,
-      //   token,
     });
   } catch (error) {
     res.status(500).json({
@@ -96,6 +105,11 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
   try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });

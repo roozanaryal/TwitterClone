@@ -3,13 +3,19 @@ import Home from "./Home";
 import Login from "./Login";
 import Feed from "./Feed";
 import Profile from "./Profile";
+import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 
 const Body = () => {
    const appRouter = createBrowserRouter([
       {
          path: "/",
-         element: <Home />,
-           children: [
+         element: (
+           <ProtectedRoute>
+             <Home />
+           </ProtectedRoute>
+         ),
+         children: [
             {
                path: "/",
                element: <Feed />,
@@ -22,7 +28,11 @@ const Body = () => {
       },
       {
          path: "/login",
-         element: <Login />,
+         element: (
+           <PublicRoute>
+             <Login />
+           </PublicRoute>
+         ),
       },
    ]);
    return (
