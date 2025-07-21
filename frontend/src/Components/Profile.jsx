@@ -1,6 +1,24 @@
 import { IoMdArrowBack } from "react-icons/io";
 import { Link } from "react-router-dom";
 import Avatar from "react-avatar";
+const dummyPosts = [
+  {
+    id: 1,
+    description: "My first post!",
+    content: "Excited to join TwitterClone.",
+  },
+  {
+    id: 2,
+    description: "Second post",
+    content: "Loving the UI and features!",
+  },
+  {
+    id: 3,
+    description: "Web dev journey",
+    content: "Learning React and Node.js is fun.",
+  },
+];
+
 const Profile = () => {
   return (
     <div className="w-[50%] border-l border-r border-gray-200">
@@ -40,6 +58,16 @@ const Profile = () => {
         </div>
         <div className="m-4 text-sm">
           <p>Exploring the web&apos;s endless possibility</p>
+        </div>
+        {/* User's Posts */}
+        <div className="m-4">
+          <h2 className="font-bold text-lg mb-2">Posts</h2>
+          {dummyPosts.map((post) => (
+            <div key={post.id} className="border-b border-gray-200 py-3">
+              <h3 className="font-semibold">{post.description}</h3>
+              <p className="text-gray-700">{post.content}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

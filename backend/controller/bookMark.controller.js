@@ -5,9 +5,7 @@ import { param, query, validationResult } from "express-validator";
 
 // Validation middleware for bookmark actions
 const validateBookmarkAction = [
-  param("postId")
-    .isMongoId()
-    .withMessage("Invalid post ID"),
+  param("postId").isMongoId().withMessage("Invalid post ID"),
 ];
 
 const validateGetBookmarksQuery = [
@@ -196,7 +194,10 @@ export const getBookmarks = [
         .exec();
 
       // Get the cursor for the next page
-      const nextCursor = posts.length === limit ? posts[posts.length - 1].createdAt.toISOString() : null;
+      const nextCursor =
+        posts.length === limit
+          ? posts[posts.length - 1].createdAt.toISOString()
+          : null;
 
       // Handle empty bookmarks case
       if (posts.length === 0 && !cursor) {

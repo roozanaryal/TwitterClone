@@ -7,6 +7,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { FiMessageCircle } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { usePostFocus } from "../context/PostFocusContext";
 
 const menu = [
   {
@@ -49,7 +50,14 @@ const menu = [
 const LeftSidebar = () => {
   const { setAuthUser } = useAuthContext();
   const navigate = useNavigate();
+  const { focusPostInput } = usePostFocus();
 
+  const handlePostClick = () => {
+    navigate("/");
+    setTimeout(() => {
+      focusPostInput();
+    }, 100);
+  }
   const handleLogout = async () => {
     try {
       await fetch("http://localhost:5000/api/auth/logout", {
@@ -67,7 +75,7 @@ const LeftSidebar = () => {
 
   return (
     <>
-      <div className="w-[20%] max-lg:w-fit">
+      <div className="w-[20%] min-w-[120px] max-w-[250px] max-lg:w-fit">
         <div className="flex flex-col items-start max-lg:items-center gap-2 py-4">
           <img
             className="ml-5 max-lg:ml-0 h-8"
@@ -96,7 +104,7 @@ const LeftSidebar = () => {
                 </Link>
               )
             )}
-            <button className="px-4 py-2 border-none text-md bg-[#1D9BF0] w-full rounded-full text-white font-bold max-lg:w-12 max-lg:px-0 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:mx-auto">
+            <button onClick={handlePostClick} className="px-4 py-2 border-none text-md bg-[#1D9BF0] w-full rounded-full text-white font-bold max-lg:w-12 max-lg:px-0 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:mx-auto">
               <span className="max-lg:hidden">Post</span>
               <svg className="hidden max-lg:block" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c.414 0 .75.336.75.75V11.25h5.5a.75.75 0 0 1 0 1.5h-5.5v5.5a.75.75 0 0 1-1.5 0v-5.5H5.75a.75.75 0 0 1 0-1.5h5.5V5.75c0-.414.336-.75.75-.75Z"/></svg>
             </button>

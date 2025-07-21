@@ -307,7 +307,6 @@ export const getFollowingFeed = [
   }),
 ];
 
-
 // Controller to fetch posts from the logged-in user
 export const getMyPosts = [
   validateMyPostsQuery,
@@ -389,4 +388,3 @@ export const getMyPosts = [
     }
   }),
 ];
-
