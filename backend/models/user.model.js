@@ -4,16 +4,21 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
   },
   username: {
     type: String,
     required: true,
     unique: true,
+    trim: true,
+    index: true, // Index for faster lookups
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    trim: true,
+    index: true, // Index for faster lookups
   },
   password: {
     type: String,
@@ -27,14 +32,31 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  followers: {
-    type: Array,
-    default: [],
-  },
-  following: {
-    type: Array,
-    default: [],
-  },
+  followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
+  following: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      default: [],
+    },
+  ],
 });
+
+// Indexes for efficient queries
+userSchema.index({ followers: 1 });
+userSchema.index({ following: 1 });
 
 export default mongoose.model("User", userSchema);

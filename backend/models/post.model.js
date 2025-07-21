@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema(
     postOwner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true, // Ensure every post has an owner
     },
     content: {
       type: String,
@@ -12,19 +13,29 @@ const postSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      trim: true,
+      maxlength: 280, // Enforce Twitter-like length
     },
-    likes: {
-      type: Array,
-      default: [],
-    },
-    comments: {
-      type: Array,
-      default: [],
-    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
+
+postSchema.index({ postOwner: 1, createdAt: -1 });
 
 export default mongoose.model("Post", postSchema);
