@@ -1,5 +1,4 @@
 import { CiHome } from "react-icons/ci";
-import { CiHashtag } from "react-icons/ci";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { CiUser } from "react-icons/ci";
 import { CiBookmark } from "react-icons/ci";
@@ -14,11 +13,6 @@ const menu = [
     label: "Home",
     icon: <CiHome size={28} />,
     to: "/",
-  },
-  {
-    label: "Explore",
-    icon: <CiHashtag size={28} />,
-    to: "/explore",
   },
   {
     label: "Notifications",

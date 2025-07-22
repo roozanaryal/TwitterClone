@@ -5,7 +5,6 @@ import Feed from "./Feed";
 import Profile from "./Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
-import Explore from "./Explore";
 import Tweet from "./Tweet";
 import Bookmark from "./Bookmark";
 
@@ -26,16 +25,6 @@ const Body = () => {
         {
           path: "/profile",
           element: <Profile />,
-        },
-      ],
-    },
-    {
-      path: "/explore",
-      element: <Explore />,
-      children: [
-        {
-          index: true,
-          element: <Tweet />,
         },
       ],
     },
