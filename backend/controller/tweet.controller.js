@@ -1,10 +1,10 @@
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
-import { body, validationResult } from "express-validator";
+import { body, query, validationResult } from "express-validator";
 import asyncHandler from "express-async-handler";
 
 // Input validation middleware
-const validateTweet = [
+export const validateTweet = [
   body("description")
     .trim()
     .isLength({ min: 1, max: 280 })
@@ -21,7 +21,7 @@ const validateTweet = [
     .escape(),
 ];
 
-const validatePostsQuery = [
+export const validatePostsQuery = [
   query("limit")
     .optional()
     .isInt({ min: 1, max: 50 })
@@ -39,7 +39,7 @@ const validatePostsQuery = [
 ];
 
 // Validation middleware for query parameters
-const validateFollowingFeedQuery = [
+export const validateFollowingFeedQuery = [
   query("limit")
     .optional()
     .isInt({ min: 1, max: 50 })
@@ -53,7 +53,7 @@ const validateFollowingFeedQuery = [
 ];
 
 // Validation middleware for query parameters
-const validateMyPostsQuery = [
+export const validateMyPostsQuery = [
   query("limit")
     .optional()
     .isInt({ min: 1, max: 50 })
@@ -80,7 +80,7 @@ export const createTweet = [
       });
     }
 
-    const { description, content } = req.body;
+    const { description } = req.body; //description removed
     const userId = req.user.id; // Assumes auth middleware sets req.user
 
     // Verify user exists

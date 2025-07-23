@@ -4,7 +4,7 @@ import { PostFocusProvider } from "../context/PostFocusContext";
 
 const Feed = () => {
    return (
-      <div className="w-[60%]">
+      <div className="px-4">
         <div>
           <CreatePost />
           <Tweet/>

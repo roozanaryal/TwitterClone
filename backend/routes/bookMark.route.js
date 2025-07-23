@@ -6,7 +6,7 @@ import {
   validateBookmarkAction,
   validateGetBookmarksQuery,
 } from "../controllers/bookmarkController.js";
-import authMiddleware from "../middleware/auth.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.route.js";
 import connectDB from "./db/connectDB.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import tweetRoutes from "./routes/tweet.route.js";
 
 // import userRoutes from "./routes/user.route.js";
 // import messageRoutes from "./routes/message.route.js";
@@ -32,6 +33,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 // app.use("/api/messages", messageRoutes);
 // app.use("/api/users", userRoutes);
+app.use("/api/tweets", tweetRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

@@ -21,7 +21,7 @@ const dummyPosts = [
 
 const Profile = () => {
   return (
-    <div className="w-[50%] border-l border-r border-gray-200">
+    <div className="px-4">
       <div>
         <div className="flex items-center py-2">
           <Link

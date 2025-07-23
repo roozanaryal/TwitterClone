@@ -7,6 +7,8 @@ const CreatePost = () => {
    const inputRef = useRef(null);
    const { setFocusFn } = usePostFocus();
    const [isFocused, setIsFocused] = useState(false);
+   const [description, setDescription] = useState("");
+   // const [content, setContent] = useState("");
 
    useEffect(() => {
       setFocusFn(() => () => {
@@ -23,6 +25,8 @@ const CreatePost = () => {
    const handleSubmit = (e) => {
       e.preventDefault();
       // TODO: submit to backend
+      
+
    };
    return (
       <div className="w-[100%]">
@@ -39,7 +43,7 @@ const CreatePost = () => {
                   </h1>
                </div>
             </div>
-            <div className={`flex items-center p-4 transition-all duration-200 ${isFocused ? "ring-2 ring-blue-400 bg-blue-50" : "ring-0 bg-white"}`}>
+            <div className="flex items-center p-4 bg-white">
                <div>
                   <Avatar
                      src="https://imgs.search.brave.com/JGCZZygUlFTk8RW8L5uyeuIACCp0BsQI8IhaYyZmS4k/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9yZXMu/Y2xvdWRpbmFyeS5j/b20vZGVtby9pbWFn/ZS91cGxvYWQvd18x/NTAsaF8xNTAsY19m/aWxsLGdfZmFjZSxy/X21heC9mcm9udF9m/YWVlLnBuZw"
@@ -54,6 +58,8 @@ const CreatePost = () => {
                   placeholder="What is happening?!"
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                />
             </div>
             <div className="flex items-center justify-between p-4 border-b border-gray-300" >
