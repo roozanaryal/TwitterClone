@@ -7,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import Tweet from "./Tweet";
 import Bookmark from "./Bookmark";
+import BookmarkComponent from "./BookmarkComponent";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -34,7 +35,7 @@ const Body = () => {
       children: [
         {
           index: true,
-          element: <Tweet />,
+          element: <BookmarkComponent />,
         },
       ],
     },

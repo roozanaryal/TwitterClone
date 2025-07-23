@@ -4,11 +4,11 @@ import asyncHandler from "express-async-handler";
 import { param, query, validationResult } from "express-validator";
 
 // Validation middleware for bookmark actions
-const validateBookmarkAction = [
+export const validateBookmarkAction = [
   param("postId").isMongoId().withMessage("Invalid post ID"),
 ];
 
-const validateGetBookmarksQuery = [
+export const validateGetBookmarksQuery = [
   query("limit")
     .optional()
     .isInt({ min: 1, max: 50 })

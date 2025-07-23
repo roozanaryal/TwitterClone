@@ -5,26 +5,26 @@ import {
   getBookmarks,
   validateBookmarkAction,
   validateGetBookmarksQuery,
-} from "../controllers/bookmarkController.js";
+} from "../controller/bookMark.controller.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Routes for bookmark actions
 router.post(
-  "/bookmarks/:postId",
+  "/:postId",
   authMiddleware,
   validateBookmarkAction,
   addBookmark
 );
 router.delete(
-  "/bookmarks/:postId",
+  "/:postId",
   authMiddleware,
   validateBookmarkAction,
   removeBookmark
 );
 router.get(
-  "/bookmarks",
+  "/",
   authMiddleware,
   validateGetBookmarksQuery,
   getBookmarks
