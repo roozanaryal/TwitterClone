@@ -1,28 +1,27 @@
-import { baseUrl } from "./useSignup";
-import { useAuthContext } from "../context/AuthContext";
+// import { useAuthContext } from "../context/AuthContext";
+import { apiCall } from "../api/apiCalls";
 
 const useCreatePost = () => {
-  const { authUser } = useAuthContext();
-  const createPost = async (description) => {
+  // const { authUser } = useAuthContext();
+
+  const createPost = async (description, content = "") => {
     try {
-      if (!authUser || !description) {
+      if (!description) {
         throw new Error("User not found and description is required");
       }
-      const res = await fetch(`${baseUrl}/api/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description }),
-        credentials: "include",
+
+      const data = await apiCall("/tweets/createpost", "POST", {
+        description,
+        content,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to create post");
-      }
-      console.log(data);
+
+      return data;
     } catch (error) {
       console.error("Error creating post:", error);
+      throw error;
     }
   };
+
   return { createPost };
 };
 

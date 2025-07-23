@@ -13,11 +13,10 @@ export const validateTweet = [
     .withMessage("Description cannot be empty or just whitespace")
     .escape(),
   body("content")
+    .optional({ checkFalsy: true })
     .trim()
-    .isLength({ min: 1, max: 280 })
-    .withMessage("Content must be between 1 and 280 characters")
-    .matches(/^(?!\s*$).+/)
-    .withMessage("Content cannot be empty or just whitespace")
+    .isLength({ max: 280 })
+    .withMessage("Content must be at most 280 characters")
     .escape(),
 ];
 
@@ -80,7 +79,7 @@ export const createTweet = [
       });
     }
 
-    const { description } = req.body; //description removed
+    const { description, content } = req.body;
     const userId = req.user.id; // Assumes auth middleware sets req.user
 
     // Verify user exists
