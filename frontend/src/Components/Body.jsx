@@ -5,7 +5,7 @@ import Feed from "./Feed";
 import Profile from "./Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
-import Tweet from "./Tweet";
+// import Tweet from "./Tweet";
 import Bookmark from "./Bookmark";
 import BookmarkComponent from "./BookmarkComponent";
 
@@ -20,7 +20,7 @@ const Body = () => {
       ),
       children: [
         {
-          path: "/",
+          index: true,
           element: <Feed />,
         },
         {

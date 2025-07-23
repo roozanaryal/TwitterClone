@@ -1,8 +1,7 @@
-// import { useAuthContext } from "../context/AuthContext";
-import { apiCall } from "../api/apiCalls";
+import useAPICall from "../api/useAPICall";
 
 const useCreatePost = () => {
-  // const { authUser } = useAuthContext();
+  const callAPI = useAPICall();
 
   const createPost = async (description, content = "") => {
     try {
@@ -10,7 +9,7 @@ const useCreatePost = () => {
         throw new Error("User not found and description is required");
       }
 
-      const data = await apiCall("/tweets/createpost", "POST", {
+      const data = await callAPI("/tweets/createpost", "POST", {
         description,
         content,
       });

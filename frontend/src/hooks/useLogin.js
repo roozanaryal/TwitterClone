@@ -1,7 +1,8 @@
+import useAPICall from "../api/useAPICall";
 import { useAuthContext } from "../context/AuthContext";
-import { baseUrl } from "./useSignup";
 const useLogin = () => {
   const { setAuthUser } = useAuthContext();
+  const callAPI = useAPICall();
 
   const login = async (username, password) => {
     try {
@@ -10,20 +11,10 @@ const useLogin = () => {
         throw new Error("Please fill in all fields");
       }
 
-      const res = await fetch(`${baseUrl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-        credentials: "include",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(
-          data.error || "Login failed. Please check your credentials."
-        );
-      }
+      const data = await callAPI("/auth/login", "POST", {
+        username,
+        password,
+      }, { skipAuth: true });
 
       // Verify that we received the expected user data
       if (!data || !data._id) {

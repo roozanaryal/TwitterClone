@@ -55,6 +55,7 @@ const CreatePost = () => {
           </div>
           <input
             ref={inputRef}
+            autoFocus
             type="text"
             className="w-full outline-none border-none text-xl ml-2 bg-transparent"
             placeholder="What is happening?!"

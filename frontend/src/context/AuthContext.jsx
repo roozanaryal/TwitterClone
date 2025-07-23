@@ -29,6 +29,7 @@ export const AuthContextProvider = ({ children }) => {
       setAuthUserState(getInitialUser());
     };
     window.addEventListener("storage", onStorage);
+    
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
