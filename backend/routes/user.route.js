@@ -1,10 +1,10 @@
 import express from "express";
-import { protectRoute } from "../middleware/protectRoute.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 import { updateBio, getBio } from "../controller/user.controller.js";
 
 const router = express.Router();
 
-router.put("/bio", protectRoute, updateBio);
-router.get("/bio", protectRoute, getBio);
+router.put("/bio", authMiddleware, updateBio);
+router.get("/bio", authMiddleware, getBio);
 
 export default router;
