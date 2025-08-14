@@ -148,3 +148,79 @@ export const getMyPosts = async (req, res) => {
     });
   }
 };
+
+// Like a post
+export const likePost = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+
+    // Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    // Check if user has already liked the post
+    if (post.likes.includes(userId)) {
+      return res.status(400).json({
+        message: "Post already liked",
+      });
+    }
+
+    // Add user to likes array
+    post.likes.push(userId);
+    await post.save();
+
+    res.status(200).json({
+      message: "Post liked successfully",
+      likesCount: post.likes.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
+// Unlike a post
+export const unlikePost = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+
+    // Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    // Check if user has liked the post
+    if (!post.likes.includes(userId)) {
+      return res.status(400).json({
+        message: "Post not liked yet",
+      });
+    }
+
+    // Remove user from likes array
+    post.likes = post.likes.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+    await post.save();
+
+    res.status(200).json({
+      message: "Post unliked successfully",
+      likesCount: post.likes.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
