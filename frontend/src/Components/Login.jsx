@@ -42,7 +42,7 @@ const Login = () => {
           <img
             className="hidden sm:block ml-5"
             width={"300px"}
-            src="https://www.edigitalagency.com.au/wp-content/uploads/new-Twitter-logo-x-black-png-1200x1227.png"
+            src="https://cdn3d.iconscout.com/3d/free/thumb/free-x-3d-icon-download-in-png-blend-fbx-gltf-file-formats--twitter-social-media-logos-logo-brand-pack-icons-9336291.png"
             alt="twitter-logo"
           />
         </div>

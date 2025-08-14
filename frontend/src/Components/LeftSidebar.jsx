@@ -3,8 +3,6 @@ import { IoIosNotificationsOutline } from "react-icons/io";
 import { CiUser } from "react-icons/ci";
 import { CiBookmark } from "react-icons/ci";
 import { AiOutlineLogout } from "react-icons/ai";
-import { FiMessageCircle } from "react-icons/fi";
-import MessageDrawer from "./MessageDrawer";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { usePostFocus } from "../context/PostFocusContext";
@@ -21,11 +19,6 @@ const menu = [
     label: "Notifications",
     icon: <IoIosNotificationsOutline size={28} />,
     to: "/notifications",
-  },
-  {
-    label: "Message",
-    icon: <FiMessageCircle size={28} />,
-    to: "/messages",
   },
   {
     label: "Bookmarks",
@@ -51,7 +44,6 @@ const LeftSidebar = () => {
 
   // Notification dropdown state
   const [notifOpen, setNotifOpen] = useState(false);
-const [isMessageOpen, setIsMessageOpen] = useState(false);
   // Example notifications (replace with real data/fetch later)
   const notifications = [
     { 
@@ -134,22 +126,6 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
                 );
               }
 
-              if (item.label === "Message") {
-                return (
-                  <div key={item.label} className="w-full">
-                    <button
-                      type="button"
-                      className={itemClasses}
-                      onClick={() => setIsMessageOpen(true)}
-                      aria-label="Send message"
-                    >
-                      {item.icon}
-                      <span className="font-semibold text-lg max-lg:hidden">{item.label}</span>
-                    </button>
-                    <MessageDrawer open={isMessageOpen} onClose={() => setIsMessageOpen(false)} />
-                  </div>
-                );
-              }
 
               if (item.label === "Logout") {
                 return (
