@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import tweetRoutes from "./routes/tweet.route.js";
 import bookmarkRoutes from "./routes/bookMark.route.js";
-// import userRoutes from "./routes/user.route.js";
+import userRoutes from "./routes/user.route.js";
 // import messageRoutes from "./routes/message.route.js";
 // import { app, io, server } from "./socket/socket.js";
 
@@ -32,7 +32,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/auth", authRoutes);
 // app.use("/api/messages", messageRoutes);
-// app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/tweets", tweetRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 
