@@ -62,10 +62,13 @@ export const getPosts = async (req, res) => {
     }
 
     let posts = [];
-    
+
     if (section === "foryou") {
       // Get posts from followed users and self
-      const followingIds = [...user.following.map(id => id.toString()), userId];
+      const followingIds = [
+        ...user.following.map((id) => id.toString()),
+        userId,
+      ];
       posts = await Post.find({
         postOwner: { $in: followingIds },
       })
@@ -105,7 +108,7 @@ export const getFollowingFeed = async (req, res) => {
     }
 
     // Get posts from followed users
-    const followingIds = [...user.following.map(id => id.toString()), userId];
+    const followingIds = [...user.following.map((id) => id.toString()), userId];
     const posts = await Post.find({
       postOwner: { $in: followingIds },
     })
