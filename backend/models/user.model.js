@@ -53,6 +53,13 @@ const userSchema = new mongoose.Schema({
       default: [],
     },
   ],
+  bookmarks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      default: [],
+    },
+  ],
 });
 
 // Indexes for efficient queries
