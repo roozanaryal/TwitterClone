@@ -19,6 +19,7 @@ router.post("/createpost", authMiddleware, createTweet);
 router.get("/getposts", authMiddleware, getPosts);
 router.get("/followingfeed", authMiddleware, getFollowingFeed);
 router.get("/myposts", authMiddleware, getMyPosts);
+router.get("/user/:userId", authMiddleware, getUserPosts);
 
 router.post("/like/:id", authMiddleware, likePost);
 router.post("/unlike/:id", authMiddleware, unlikePost);

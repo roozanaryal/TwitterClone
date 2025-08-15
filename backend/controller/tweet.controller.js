@@ -149,6 +149,28 @@ export const getMyPosts = async (req, res) => {
   }
 };
 
+// Get user's posts by user ID
+export const getUserPosts = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Get user's posts
+    const posts = await Post.find({ postOwner: userId })
+      .populate("postOwner", "username name profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    res.status(200).json({
+      posts,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
 // Like a post
 export const likePost = async (req, res) => {
   try {
