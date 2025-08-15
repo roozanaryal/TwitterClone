@@ -7,9 +7,9 @@ const postSchema = new mongoose.Schema(
       ref: "User",
       required: true, // Ensure every post has an owner
     },
-    content: {
-      type: String,
-    },
+    // content: {
+    //   type: String,
+    // },
     description: {
       type: String,
       required: true,

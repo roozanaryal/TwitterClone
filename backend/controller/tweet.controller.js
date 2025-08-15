@@ -4,7 +4,7 @@ import User from "../models/user.model.js";
 // Create a new tweet
 export const createTweet = async (req, res) => {
   try {
-    const { description, content } = req.body;
+    const { description } = req.body;
     const userId = req.user.id;
 
     // Check if user exists
@@ -19,7 +19,7 @@ export const createTweet = async (req, res) => {
     const newPost = new Post({
       postOwner: userId,
       description,
-      content,
+      // content,
     });
 
     // Save post
@@ -208,9 +208,7 @@ export const unlikePost = async (req, res) => {
     }
 
     // Remove user from likes array
-    post.likes = post.likes.filter(
-      (id) => id.toString() !== userId.toString()
-    );
+    post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
     await post.save();
 
     res.status(200).json({
@@ -221,6 +219,71 @@ export const unlikePost = async (req, res) => {
     console.log(error);
     res.status(500).json({
       message: "Something went wrong",
+    });
+  }
+};
+
+export const deletePost = async () => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+    if (post.postOwner.toString() !== userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+    await post.deleteOne();
+    res.status(200).json({
+      message: "Post deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+export const updatePost = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.postOwner.toString() !== userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Update only provided fields
+    if (req.body.description !== undefined) {
+      post.description = req.body.description;
+    }
+    // if (req.body.content !== undefined) {
+    //   post.content = req.body.content;
+    // }
+
+    await post.save();
+
+    res.status(200).json({
+      message: "Post updated successfully",
+      updatedPost: post,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
     });
   }
 };
