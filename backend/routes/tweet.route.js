@@ -26,8 +26,8 @@ router.post("/like/:id", authMiddleware, likePost);
 router.post("/unlike/:id", authMiddleware, unlikePost);
 router.post("/update/:id", authMiddleware, updatePost);
 
-router.post("/delete/:id", authMiddleware, deletePost);
+router.delete("/delete/:id", authMiddleware, deletePost);
 router.post("/comment/:id", authMiddleware, addComment);
-router.post("/deletecomment/:id", authMiddleware, deleteComment);
+router.delete("/deletecomment/:id", authMiddleware, deleteComment);
 
 export default router;
