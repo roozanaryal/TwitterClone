@@ -10,6 +10,7 @@ import {
   deletePost,
   addComment,
   deleteComment,
+  getUserPosts,
 } from "../controller/tweet.controller.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
