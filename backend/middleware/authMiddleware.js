@@ -12,7 +12,7 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-    req.user = user;
+    req.user = user; //thats why we can do req.user.id in controllers as it is set as a middleware and we can access it anywhere
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
