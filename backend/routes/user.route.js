@@ -11,4 +11,5 @@ router.get("/profile/:username", authMiddleware, getUserProfile);
 router.post("/follow/:id", authMiddleware, followUser);
 router.post("/unfollow/:id", authMiddleware, unfollowUser);
 
+
 export default router;

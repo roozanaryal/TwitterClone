@@ -92,7 +92,7 @@ export const getUserNotifications = async (req, res) => {
       .populate("fromUser", "username name profilePicture")
       .populate("relatedPost", "description")
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(10);
 
     res.status(200).json({
       notifications,
