@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
+import Notification from "../models/notification.model.js";
 
 export const updateBio = async (req, res) => {
   try {
@@ -100,6 +101,102 @@ export const getUserProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getUserProfile: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Follow a user
+export const followUser = async (req, res) => {
+  try {
+    const { id: targetUserId } = req.params;
+    const currentUserId = req.user._id;
+
+    // Check if user tries to follow themselves
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ error: "You cannot follow yourself" });
+    }
+
+    // Check if target user exists
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if already following
+    const currentUser = await User.findById(currentUserId);
+    if (currentUser.following.includes(targetUserId)) {
+      return res.status(400).json({ error: "You are already following this user" });
+    }
+
+    // Add target user to current user's following list
+    await User.findByIdAndUpdate(currentUserId, {
+      $push: { following: targetUserId }
+    });
+
+    // Add current user to target user's followers list
+    await User.findByIdAndUpdate(targetUserId, {
+      $push: { followers: currentUserId }
+    });
+
+    // Create notification for the followed user
+    const notification = new Notification({
+      user: targetUserId,
+      fromUser: currentUserId,
+      type: "follow",
+      message: `${currentUser.username} started following you`,
+    });
+
+    await notification.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User followed successfully"
+    });
+  } catch (error) {
+    console.error("Error in followUser: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Unfollow a user
+export const unfollowUser = async (req, res) => {
+  try {
+    const { id: targetUserId } = req.params;
+    const currentUserId = req.user._id;
+
+    // Check if user tries to unfollow themselves
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ error: "You cannot unfollow yourself" });
+    }
+
+    // Check if target user exists
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if not following
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser.following.includes(targetUserId)) {
+      return res.status(400).json({ error: "You are not following this user" });
+    }
+
+    // Remove target user from current user's following list
+    await User.findByIdAndUpdate(currentUserId, {
+      $pull: { following: targetUserId }
+    });
+
+    // Remove current user from target user's followers list
+    await User.findByIdAndUpdate(targetUserId, {
+      $pull: { followers: currentUserId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User unfollowed successfully"
+    });
+  } catch (error) {
+    console.error("Error in unfollowUser: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

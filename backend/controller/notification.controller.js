@@ -5,15 +5,16 @@ import Post from "../models/post.model.js";
 // Create a notification
 export const createNotification = async (req, res) => {
   try {
-    const { userId, fromUserId, type, relatedPostId, relatedCommentId } = req.body;
-    
+    const { userId, fromUserId, type, relatedPostId, relatedCommentId } =
+      req.body;
+    // const userId = req.user.id;
     // Validate required fields
     if (!userId || !fromUserId || !type) {
       return res.status(400).json({
         message: "userId, fromUserId, and type are required",
       });
     }
-    
+
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
@@ -21,7 +22,7 @@ export const createNotification = async (req, res) => {
         message: "User not found",
       });
     }
-    
+
     // Check if fromUser exists
     const fromUser = await User.findById(fromUserId);
     if (!fromUser) {
@@ -29,7 +30,7 @@ export const createNotification = async (req, res) => {
         message: "From user not found",
       });
     }
-    
+
     // Check if post exists (if relatedPostId is provided)
     let post = null;
     if (relatedPostId) {
@@ -40,7 +41,7 @@ export const createNotification = async (req, res) => {
         });
       }
     }
-    
+
     // Generate message based on type
     let message = "";
     switch (type) {
@@ -56,7 +57,7 @@ export const createNotification = async (req, res) => {
       default:
         message = `${fromUser.username} ${type}ed`;
     }
-    
+
     // Create notification
     const notification = new Notification({
       user: userId,
@@ -66,9 +67,9 @@ export const createNotification = async (req, res) => {
       relatedPost: relatedPostId || null,
       relatedComment: relatedCommentId || null,
     });
-    
+
     await notification.save();
-    
+
     res.status(201).json({
       message: "Notification created successfully",
       notification,
@@ -86,13 +87,13 @@ export const createNotification = async (req, res) => {
 export const getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     const notifications = await Notification.find({ user: userId })
       .populate("fromUser", "username name profilePicture")
       .populate("relatedPost", "description")
       .sort({ createdAt: -1 })
       .limit(50);
-    
+
     res.status(200).json({
       notifications,
     });
@@ -110,21 +111,21 @@ export const markAsRead = async (req, res) => {
   try {
     const { id: notificationId } = req.params;
     const userId = req.user.id;
-    
+
     const notification = await Notification.findOne({
       _id: notificationId,
       user: userId,
     });
-    
+
     if (!notification) {
       return res.status(404).json({
         message: "Notification not found",
       });
     }
-    
+
     notification.isRead = true;
     await notification.save();
-    
+
     res.status(200).json({
       message: "Notification marked as read",
       notification,
@@ -142,12 +143,12 @@ export const markAsRead = async (req, res) => {
 export const markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     await Notification.updateMany(
       { user: userId, isRead: false },
       { isRead: true }
     );
-    
+
     res.status(200).json({
       message: "All notifications marked as read",
     });
@@ -165,18 +166,18 @@ export const deleteNotification = async (req, res) => {
   try {
     const { id: notificationId } = req.params;
     const userId = req.user.id;
-    
+
     const notification = await Notification.findOneAndDelete({
       _id: notificationId,
       user: userId,
     });
-    
+
     if (!notification) {
       return res.status(404).json({
         message: "Notification not found",
       });
     }
-    
+
     res.status(200).json({
       message: "Notification deleted successfully",
     });
@@ -193,12 +194,12 @@ export const deleteNotification = async (req, res) => {
 export const getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     const count = await Notification.countDocuments({
       user: userId,
       isRead: false,
     });
-    
+
     res.status(200).json({
       count,
     });

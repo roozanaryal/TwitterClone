@@ -4,8 +4,6 @@ const baseUrl = "http://localhost:5000/api";
 
 export function useAPICall() {
   const { authUser } = useAuthContext();
-  console.log(authUser);
-
 
   const callAPI = async (urlPath, methodType, body, options = {}) => {
     const { skipAuth = false } = options;
