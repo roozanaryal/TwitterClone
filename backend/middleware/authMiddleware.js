@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies.token; //this is allowed bcz of cookie parser middleware
     if (!token) {
       return res.status(401).json({ message: "Not authenticated" });
     }
