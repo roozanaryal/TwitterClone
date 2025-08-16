@@ -1,5 +1,7 @@
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import Comment from "../models/comments.model.js";
+import Notification from "../models/notification.model.js";
 
 // Create a new tweet
 export const createTweet = async (req, res) => {
@@ -195,6 +197,26 @@ export const likePost = async (req, res) => {
     // Add user to likes array
     post.likes.push(userId);
     await post.save();
+    
+    // Create notification for post owner (if it's not their own post)
+    if (post.postOwner.toString() !== userId) {
+      const postOwner = await User.findById(post.postOwner);
+      const liker = await User.findById(userId);
+      
+      if (postOwner && liker) {
+        const message = `${liker.username} liked your post`;
+        
+        const notification = new Notification({
+          user: post.postOwner,
+          fromUser: userId,
+          type: "like",
+          message: message,
+          relatedPost: postId,
+        });
+        
+        await notification.save();
+      }
+    }
 
     res.status(200).json({
       message: "Post liked successfully",
@@ -232,6 +254,8 @@ export const unlikePost = async (req, res) => {
     // Remove user from likes array
     post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
     await post.save();
+    
+    // Optionally remove notification (not implemented for simplicity)
 
     res.status(200).json({
       message: "Post unliked successfully",
@@ -310,7 +334,7 @@ export const updatePost = async (req, res) => {
   }
 };
 
-export const addComment = async () => {
+export const addComment = async (req, res) => {
   const { comment } = req.body;
   const userId = req.user.id;
   const { id: postId } = req.params;
@@ -327,13 +351,35 @@ export const addComment = async () => {
       });
     }
     const newComment = new Comment({
-      comment,
-      commenterId: userId,
-      postId,
+      postOwner: userId,
+      post: postId,
+      description: comment,
     });
     await newComment.save();
     post.comments.push(newComment._id);
     await post.save();
+    
+    // Create notification for post owner (if it's not their own post)
+    if (post.postOwner.toString() !== userId) {
+      const postOwner = await User.findById(post.postOwner);
+      const commenter = await User.findById(userId);
+      
+      if (postOwner && commenter) {
+        const message = `${commenter.username} commented on your post`;
+        
+        const notification = new Notification({
+          user: post.postOwner,
+          fromUser: userId,
+          type: "comment",
+          message: message,
+          relatedPost: postId,
+          relatedComment: newComment._id,
+        });
+        
+        await notification.save();
+      }
+    }
+    
     res.status(200).json({
       message: "Comment added successfully",
       comment: newComment,
@@ -347,7 +393,7 @@ export const addComment = async () => {
   }
 };
 
-export const deleteComment = async () => {
+export const deleteComment = async (req, res) => {
   const { id: commentId } = req.params;
   const userId = req.user.id;
   try {
@@ -357,7 +403,7 @@ export const deleteComment = async () => {
         message: "Comment not found",
       });
     }
-    if (comment.commenterId.toString() !== userId) {
+    if (comment.postOwner.toString() !== userId) {
       return res.status(401).json({
         message: "Unauthorized",
       });

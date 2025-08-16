@@ -8,6 +8,7 @@ import cors from "cors";
 import tweetRoutes from "./routes/tweet.route.js";
 import bookmarkRoutes from "./routes/bookMark.route.js";
 import userRoutes from "./routes/user.route.js";
+import notificationRoutes from "./routes/notification.route.js";
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tweets", tweetRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
