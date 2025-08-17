@@ -6,7 +6,6 @@ const useFollow = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const callAPI = useAPICall();
-
   const followUser = async (userId) => {
     try {
       setLoading(true);
