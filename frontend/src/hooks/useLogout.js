@@ -11,10 +11,12 @@ const useLogout = () => {
             headers: {
                "Content-Type": "application/json",
             },
+            credentials: "include",
          });
          const data = await res.json();
          if (data.success) {
-            localStorage.removeItem("xClone");
+            localStorage.removeItem("xCloneUser");
+            localStorage.removeItem("xClone"); // Remove old token if exists
             setAuthUser(null);
          }
       } catch (error) {

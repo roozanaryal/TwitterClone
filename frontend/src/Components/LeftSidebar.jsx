@@ -86,8 +86,8 @@ const LeftSidebar = () => {
     } catch (err) {
       // Optionally handle error
     }
-    localStorage.removeItem("xClone");
     localStorage.removeItem("xCloneUser");
+    localStorage.removeItem("xClone"); // Remove old token if exists
     setAuthUser(null);
     navigate("/login");
   };

@@ -40,10 +40,7 @@ const useSignup = () => {
         throw new Error("Invalid response from server");
       }
 
-      // Store token separately if present
-      if (data.token) {
-        localStorage.setItem("xClone", data.token);
-      }
+      // Store user data in localStorage
       localStorage.setItem("xCloneUser", JSON.stringify(data));
       setAuthUser(data);
 

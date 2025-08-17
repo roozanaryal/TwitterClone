@@ -21,20 +21,12 @@ const useLogin = () => {
         throw new Error("Invalid response from server");
       }
       console.log(data);
-      // Store token separately if present
-      const { token, ...userData } = data;
-
-      // Store token separately if present
-      if (token) {
-        localStorage.setItem("xClone", token);
-      }
-
       // Store user data in localStorage and context
-      localStorage.setItem("xCloneUser", JSON.stringify(userData));
-      setAuthUser(userData);
+      localStorage.setItem("xCloneUser", JSON.stringify(data));
+      setAuthUser(data);
 
       // Return the user data in case it's needed
-      return userData;
+      return data;
     } catch (error) {
       // Log the error for debugging
       console.error("Login error:", error);

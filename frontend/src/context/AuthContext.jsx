@@ -5,7 +5,7 @@ const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
   const getInitialUser = () => {
     try {
-      return JSON.parse(localStorage.getItem("xClone")) || null;
+      return JSON.parse(localStorage.getItem("xCloneUser")) || null;
     } catch {
       return null;
     }
@@ -17,9 +17,10 @@ export const AuthContextProvider = ({ children }) => {
   const setAuthUser = (user) => {
     setAuthUserState(user);
     if (user) {
-      localStorage.setItem("xClone", JSON.stringify(user));
+      localStorage.setItem("xCloneUser", JSON.stringify(user));
     } else {
-      localStorage.removeItem("xClone");
+      localStorage.removeItem("xCloneUser");
+      localStorage.removeItem("xClone"); // Remove old token if exists
     }
   };
 

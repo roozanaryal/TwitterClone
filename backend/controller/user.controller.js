@@ -6,29 +6,31 @@ export const updateBio = async (req, res) => {
   try {
     const { bio } = req.body;
     const userId = req.user._id;
-    
-    if (typeof bio !== 'string') {
+
+    if (typeof bio !== "string") {
       return res.status(400).json({ error: "Bio must be a string" });
     }
-    
+
     if (bio.length > 160) {
-      return res.status(400).json({ error: "Bio must be less than 160 characters" });
+      return res
+        .status(400)
+        .json({ error: "Bio must be less than 160 characters" });
     }
-    
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { bio: bio.trim() },
       { new: true, select: "-password" }
     );
-    
+
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.status(200).json({
       success: true,
       message: "Bio updated successfully",
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     console.error("Error in updateBio: ", error.message);
@@ -39,16 +41,16 @@ export const updateBio = async (req, res) => {
 export const getBio = async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     const user = await User.findById(userId).select("bio");
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.status(200).json({
       success: true,
-      bio: user.bio
+      bio: user.bio,
     });
   } catch (error) {
     console.error("Error in getBio: ", error.message);
@@ -56,24 +58,53 @@ export const getBio = async (req, res) => {
   }
 };
 
+import mongoose from "mongoose";
+import User from "../models/user.model.js";
+
 export const getSuggestedUsers = async (req, res) => {
   try {
     const userId = req.user._id;
-    
-    // Get users that the current user is not following and is not the current user
-    const users = await User.find({
-      _id: { $ne: userId },
-      followers: { $ne: userId }
-    })
-    .select("-password")
-    .limit(5);
-    
+    const currentUser = await User.findById(userId).select("following");
+
+    // Exclude current user + people they already follow
+    const excludedIds = [userId, ...currentUser.following];
+
+    // Use aggregation to compute mutual followers
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $nin: excludedIds }, // find id that not me & not already following
+        },
+      },
+      {
+        // Count how many of my "following" are in their followers (mutual followers)
+        $addFields: {
+          mutualCount: {
+            $size: {
+              $setIntersection: ["$followers", currentUser.following],
+            },
+          },
+        },
+      },
+      {
+        // Randomize a bit but prioritize mutuals
+        $sort: { mutualCount: -1, createdAt: -1 },
+      },
+      { $sample: { size: 10 } }, // randomize from top candidates
+      { $limit: 5 }, // only return 5
+      {
+        $project: {
+          password: 0, // never expose passwords
+        },
+      },
+    ]);
+
     res.status(200).json({
       success: true,
-      users
+      users,
     });
   } catch (error) {
-    console.error("Error in getSuggestedUsers: ", error.message);
+    console.error("Error in getSuggestedUsers:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -81,23 +112,23 @@ export const getSuggestedUsers = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    
+
     // Find user by username and exclude password
     const user = await User.findOne({ username }).select("-password");
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Get posts count
     const postsCount = await Post.countDocuments({ postOwner: user._id });
-    
+
     res.status(200).json({
       success: true,
       user: {
         ...user.toObject(),
-        postsCount
-      }
+        postsCount,
+      },
     });
   } catch (error) {
     console.error("Error in getUserProfile: ", error.message);
@@ -125,17 +156,19 @@ export const followUser = async (req, res) => {
     // Check if already following
     const currentUser = await User.findById(currentUserId);
     if (currentUser.following.includes(targetUserId)) {
-      return res.status(400).json({ error: "You are already following this user" });
+      return res
+        .status(400)
+        .json({ error: "You are already following this user" });
     }
 
     // Add target user to current user's following list
     await User.findByIdAndUpdate(currentUserId, {
-      $push: { following: targetUserId }
+      $push: { following: targetUserId },
     });
 
     // Add current user to target user's followers list
     await User.findByIdAndUpdate(targetUserId, {
-      $push: { followers: currentUserId }
+      $push: { followers: currentUserId },
     });
 
     // Create notification for the followed user
@@ -150,7 +183,7 @@ export const followUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "User followed successfully"
+      message: "User followed successfully",
     });
   } catch (error) {
     console.error("Error in followUser: ", error.message);
@@ -183,17 +216,17 @@ export const unfollowUser = async (req, res) => {
 
     // Remove target user from current user's following list
     await User.findByIdAndUpdate(currentUserId, {
-      $pull: { following: targetUserId }
+      $pull: { following: targetUserId },
     });
 
     // Remove current user from target user's followers list
     await User.findByIdAndUpdate(targetUserId, {
-      $pull: { followers: currentUserId }
+      $pull: { followers: currentUserId },
     });
 
     res.status(200).json({
       success: true,
-      message: "User unfollowed successfully"
+      message: "User unfollowed successfully",
     });
   } catch (error) {
     console.error("Error in unfollowUser: ", error.message);
