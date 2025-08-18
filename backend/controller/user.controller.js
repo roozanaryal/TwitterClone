@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
+import User from "../models/user.model.js";
 
 export const updateBio = async (req, res) => {
   try {
@@ -58,9 +59,6 @@ export const getBio = async (req, res) => {
   }
 };
 
-import mongoose from "mongoose";
-import User from "../models/user.model.js";
-
 export const getSuggestedUsers = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -109,7 +107,7 @@ export const getSuggestedUsers = async (req, res) => {
   }
 };
 
-export const getUserProfile = async (req, res) => {
+export const getOtherUserProfile = async (req, res) => {
   try {
     const { username } = req.params;
 
@@ -238,17 +236,17 @@ export const unfollowUser = async (req, res) => {
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Find user by ID and exclude password
     const user = await User.findById(userId).select("-password");
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Get posts count
     const postsCount = await Post.countDocuments({ postOwner: user._id });
-    
+
     res.status(200).json({
       success: true,
       user: {
