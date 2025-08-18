@@ -1,6 +1,6 @@
 import User from "../models/user.model";
 
-export const searchResult = async () => {
+export const searchResult = async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) return res.json([]);
@@ -11,6 +11,6 @@ export const searchResult = async () => {
     res.status(200).json({ users });
   } catch (error) {
     console.log(error);
-    throw new Error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
