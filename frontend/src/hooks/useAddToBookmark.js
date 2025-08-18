@@ -17,7 +17,7 @@ const useAddToBookmark = () => {
 
   const removeFromBookmark = async (postId) => {
     try {
-      const response = await callAPI(`/api/bookmarks/${postId}`, "DELETE");
+      const response = await callAPI(`/bookmarks/${postId}`, "DELETE");
       return { success: true, data: response };
     } catch (error) {
       console.log("Error removing bookmark:", error);

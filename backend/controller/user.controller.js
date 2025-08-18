@@ -233,3 +233,31 @@ export const unfollowUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Get current user's profile
+export const getMyProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Find user by ID and exclude password
+    const user = await User.findById(userId).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Get posts count
+    const postsCount = await Post.countDocuments({ postOwner: user._id });
+    
+    res.status(200).json({
+      success: true,
+      user: {
+        ...user.toObject(),
+        postsCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getMyProfile: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

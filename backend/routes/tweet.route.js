@@ -10,17 +10,17 @@ import {
   deletePost,
   addComment,
   deleteComment,
-  getUserPosts,
+  getOtherUserPosts,
 } from "../controller/tweet.controller.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/createpost", authMiddleware, createTweet);
-router.get("/getposts", authMiddleware, getPosts);
+router.get("/getmyposts", authMiddleware, getMyPosts);
 router.get("/followingfeed", authMiddleware, getFollowingFeed);
-router.get("/myposts", authMiddleware, getMyPosts);
-router.get("/user/:userId", authMiddleware, getUserPosts);
+router.get("/getposts", authMiddleware, getPosts);
+router.get("/user/:userId", authMiddleware, getOtherUserPosts);
 
 router.post("/like/:id", authMiddleware, likePost);
 router.post("/unlike/:id", authMiddleware, unlikePost);

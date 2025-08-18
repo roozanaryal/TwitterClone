@@ -5,7 +5,7 @@ const useGetBookmarks = () => {
 
   const getBookmarks = async () => {
     try {
-      const response = await callAPI(`/api/bookmarks`, "GET");
+      const response = await callAPI(`/bookmarks`, "GET");
       return { success: true, data: response };
     } catch (error) {
       console.log("Error fetching bookmarks:", error);

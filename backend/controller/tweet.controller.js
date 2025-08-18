@@ -152,7 +152,7 @@ export const getMyPosts = async (req, res) => {
 };
 
 // Get user's posts by user ID
-export const getUserPosts = async (req, res) => {
+export const getOtherUserPosts = async (req, res) => {
   try {
     const { userId } = req.params;
 
