@@ -12,7 +12,10 @@ const useNotifications = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await callAPI(NOTIFICATION_ENDPOINTS.GET_NOTIFICATIONS, "GET");
+      const response = await callAPI(
+        NOTIFICATION_ENDPOINTS.GET_NOTIFICATIONS,
+        "GET"
+      );
       if (response.success) {
         setNotifications(response.data.notifications);
       }
@@ -27,7 +30,10 @@ const useNotifications = () => {
 
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const response = await callAPI(NOTIFICATION_ENDPOINTS.UNREAD_COUNT, "GET");
+      const response = await callAPI(
+        NOTIFICATION_ENDPOINTS.UNREAD_COUNT + "?page={page}&limit={limit}",
+        "GET"
+      );
       if (response.success) {
         setUnreadCount(response.data.count);
       }
@@ -40,7 +46,11 @@ const useNotifications = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const response = await callAPI(NOTIFICATION_ENDPOINTS.MARK_READ(notificationId), "PATCH", {});
+      const response = await callAPI(
+        NOTIFICATION_ENDPOINTS.MARK_READ(notificationId),
+        "PATCH",
+        {}
+      );
       if (response.success) {
         setNotifications((prev) =>
           prev.map((notification) =>
@@ -60,7 +70,11 @@ const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await callAPI(NOTIFICATION_ENDPOINTS.MARK_ALL_READ, "PATCH", {});
+      const response = await callAPI(
+        NOTIFICATION_ENDPOINTS.MARK_ALL_READ,
+        "PATCH",
+        {}
+      );
       if (response.success) {
         setNotifications((prev) =>
           prev.map((notification) => ({ ...notification, isRead: true }))
@@ -76,7 +90,10 @@ const useNotifications = () => {
 
   const removeNotification = async (notificationId) => {
     try {
-      const response = await callAPI(NOTIFICATION_ENDPOINTS.DELETE(notificationId), "DELETE");
+      const response = await callAPI(
+        NOTIFICATION_ENDPOINTS.DELETE(notificationId),
+        "DELETE"
+      );
       if (response.success) {
         setNotifications((prev) =>
           prev.filter((notification) => notification._id !== notificationId)
