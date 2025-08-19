@@ -87,15 +87,29 @@ export const createNotification = async (req, res) => {
 export const getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
+    let { page = 1, limit = 4 } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
 
+    const skip = (page - 1) * limit;
+
+    // get notifications with pagination
     const notifications = await Notification.find({ user: userId })
       .populate("fromUser", "username name profilePicture")
       .populate("relatedPost", "description")
       .sort({ createdAt: -1 })
-      .limit(10);
+      .skip(skip)
+      .limit(limit);
+
+    // total count (for pagination info)
+    const total = await Notification.countDocuments({ user: userId });
 
     res.status(200).json({
       notifications,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      hasMore: page * limit < total, // useful for infinite scroll
     });
   } catch (error) {
     console.log(error);
@@ -105,6 +119,7 @@ export const getUserNotifications = async (req, res) => {
     });
   }
 };
+
 
 // Mark notification as read
 export const markAsRead = async (req, res) => {
