@@ -84,11 +84,10 @@ export const getSuggestedUsers = async (req, res) => {
         },
       },
       {
-        // Randomize a bit but prioritize mutuals
+        // Sort by mutual connections first, then by creation date for consistency
         $sort: { mutualCount: -1, createdAt: -1 },
       },
-      { $sample: { size: 10 } }, // randomize from top candidates
-      { $limit: 5 }, // only return 5
+      { $limit: 5 }, // only return 5 consistent results
       {
         $project: {
           password: 0, // never expose passwords
@@ -227,6 +226,40 @@ export const unfollowUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in unfollowUser: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Search users
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const currentUserId = req.user._id;
+
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+
+    const searchQuery = q.trim();
+
+    // Search users by username, fullName, or email
+    const users = await User.find({
+      _id: { $ne: currentUserId }, // Exclude current user
+      $or: [
+        { username: { $regex: searchQuery, $options: "i" } },
+        { fullName: { $regex: searchQuery, $options: "i" } },
+        { email: { $regex: searchQuery, $options: "i" } },
+      ],
+    })
+      .select("-password")
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Error in searchUsers: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
