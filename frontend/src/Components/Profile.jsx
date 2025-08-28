@@ -2,25 +2,11 @@ import { IoMdArrowBack } from "react-icons/io";
 import { Link, useParams } from "react-router-dom";
 import Avatar from "react-avatar";
 import { useState, useEffect } from "react";
-import { FaRegComment, FaHeart } from "react-icons/fa";
-import { CiHeart, CiBookmark } from "react-icons/ci";
+import Tweet from "./Tweet";
 import { useAuthContext } from "../context/AuthContext";
 import useGetOtherUserProfile from "../hooks/useGetOtherUserProfile";
 import useAPICall from "../api/useAPICall";
 import FollowersModal from "./FollowersModal";
-
-// Helper function to format time ago
-const formatTimeAgo = (dateString) => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffInSeconds = Math.floor((now - date) / 1000);
-
-  if (diffInSeconds < 60) return `${diffInSeconds}s`;
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d`;
-  return `${Math.floor(diffInSeconds / 2592000)}mo`;
-};
 
 const Profile = () => {
   const { username } = useParams();
@@ -35,6 +21,9 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('followers');
+  // Local state for per-post UI actions
+  const [commentInputs, setCommentInputs] = useState({});
+  const [showCommentInput, setShowCommentInput] = useState({});
   
   const isOwnProfile = !username || username === authUser?.username;
 
@@ -138,6 +127,61 @@ const Profile = () => {
     setModalOpen(false);
   };
 
+  // Local handlers for post interactions (optimistic UI)
+  const handleLike = (postId, isLiked) => {
+    setUserPosts(prev => prev.map(p => {
+      if (p._id === postId) {
+        const likes = p.likes || [];
+        const updated = isLiked ? likes.filter(id => id !== authUser?._id) : [...likes, authUser?._id];
+        return { ...p, likes: updated };
+      }
+      return p;
+    }));
+    // TODO: integrate real API call if desired
+  };
+
+  const handleBookmark = (postId, isBookmarked) => {
+    setUserPosts(prev => prev.map(p => {
+      if (p._id === postId) {
+        const bms = p.bookmarks || [];
+        const updated = isBookmarked ? bms.filter(id => id !== authUser?._id) : [...bms, authUser?._id];
+        return { ...p, bookmarks: updated };
+      }
+      return p;
+    }));
+    // TODO: integrate real API call if desired
+  };
+
+  const toggleCommentInput = (postId) => {
+    setShowCommentInput(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleCommentSubmit = (postId) => {
+    const comment = commentInputs[postId];
+    if (!comment?.trim()) return;
+
+    const optimisticComment = {
+      _id: `temp-${Date.now()}`,
+      description: comment,
+      postOwner: {
+        _id: authUser?._id,
+        username: authUser?.username,
+        name: authUser?.name,
+        profilePicture: authUser?.profilePicture || ""
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    setUserPosts(prev => prev.map(p => {
+      if (p._id === postId) {
+        return { ...p, comments: [...(p.comments || []), optimisticComment] };
+      }
+      return p;
+    }));
+    setCommentInputs(prev => ({ ...prev, [postId]: "" }));
+    // TODO: integrate real API call if desired
+  };
+
   if (loading) {
     return (
       <div className="px-4 py-8 text-center">
@@ -236,68 +280,32 @@ const Profile = () => {
             <span className="text-gray-500 ml-1">Followers</span>
           </div>
         </div>
-      </div>
-      {/* User's Posts */}
-      <div className="m-4">
-        <h2 className="font-bold text-lg mb-2">Posts</h2>
-        {userPosts.length > 0 ? (
-          <div className="w-full">
-            {userPosts.map((post) => (
-              <div className="border-b border-gray-200 w-full" key={post._id}>
-                <div className="flex p-4">
-                  <Avatar
-                    src={
-                      user.profilePicture ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        user.fullName || user.name || user.username || "User"
-                      )}&background=random`
-                    }
-                    size="40"
-                    round={true}
-                  />
-                  <div className="ml-2 flex-1">
-                    <div className="flex items-center ml-2">
-                      <h1 className="font-bold">{user.fullName}</h1>
-                      <p className="text-gray-500 text-sm ml-1">
-                        @{user.username} · {formatTimeAgo(post.createdAt)}
-                      </p>
-                    </div>
-                    <div className="ml-2">
-                      <p className="mt-1">{post.description}</p>
-                      {post.content && post.content !== post.description && (
-                        <p className="mt-1 text-gray-700">{post.content}</p>
-                      )}
-                    </div>
-                    <div className="flex justify-between my-3 ml-2 max-w-md">
-                      <div className="flex items-center">
-                        <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
-                          <FaRegComment size="20px" />
-                        </div>
-                        <p className="text-sm text-gray-500">{post.comments?.length || 0}</p>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="p-2 hover:bg-red-200 rounded-full cursor-pointer">
-                          {post.likes?.includes(authUser?._id) ? (
-                            <FaHeart size="20px" className="text-red-500" />
-                          ) : (
-                            <CiHeart size="20px" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">{post.likes?.length || 0}</p>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
-                          {post.bookmarks?.includes(authUser?._id) ? (
-                            <CiBookmark size="20px" className="text-blue-500 fill-current" />
-                          ) : (
-                            <CiBookmark size="20px" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">{post.bookmarks?.length || 0}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {/* User's Posts */}
+        <div className="m-4">
+          <h2 className="font-bold text-lg mb-2">Posts</h2>
+          {userPosts.length > 0 ? (
+            <div className="w-full">
+              {userPosts.map((post) => (
+                <Tweet
+                  key={post._id}
+                  post={{
+                    ...post,
+                    postOwner: {
+                      _id: user._id,
+                      username: user.username,
+                      name: user.fullName || user.name || user.username,
+                      profilePicture: user.profilePicture,
+                    },
+                  }}
+                  authUserId={authUser?._id}
+                  onToggleLike={handleLike}
+                  onToggleBookmark={handleBookmark}
+                  showComment={!!showCommentInput[post._id]}
+                  onToggleComment={() => toggleCommentInput(post._id)}
+                  commentInput={commentInputs[post._id] || ""}
+                  onChangeComment={(val) => setCommentInputs(prev => ({ ...prev, [post._id]: val }))}
+                  onSubmitComment={() => handleCommentSubmit(post._id)}
+                />
               ))}
             </div>
           ) : (
@@ -309,7 +317,6 @@ const Profile = () => {
             </div>
           )}
         </div>
-        
         {/* Followers/Following Modal */}
         <FollowersModal
           isOpen={modalOpen}

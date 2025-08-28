@@ -6,8 +6,9 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { usePostFocus } from "../hooks/usePostFocus.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NotificationDropdown from "./NotificationDropdown";
+import useNotifications from "../hooks/useNotifications";
 
 const menu = [
   {
@@ -44,32 +45,46 @@ const LeftSidebar = () => {
 
   // Notification dropdown state
   const [notifOpen, setNotifOpen] = useState(false);
-  // Example notifications (replace with real data/fetch later)
-  const notifications = [
-    { 
-      text: "John Doe started following you", 
-      subtitle: "Welcome your new follower!",
-      type: "follow", 
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      read: false 
-    },
-    { 
-      text: "Sarah liked your post", 
-      subtitle: "\"Just had the best coffee ever!\"",
-      type: "like", 
-      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-      read: false 
-    },
-    { 
-      text: "Mike commented on your post", 
-      subtitle: "\"Great shot! Where was this taken?\"",
-      type: "comment", 
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      read: true 
-    },
-  ];
+  // Real notifications
+  const {
+    notifications,
+    unreadCount,
+    fetchNotifications,
+    fetchUnreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   const handleNotifClick = () => setNotifOpen((prev) => !prev);
+
+  // When opening the dropdown, refresh notifications and unread count
+  useEffect(() => {
+    if (notifOpen) {
+      fetchNotifications();
+      fetchUnreadCount();
+    }
+  }, [notifOpen, fetchNotifications, fetchUnreadCount]);
+
+  const handleNotificationItemClick = async (notification) => {
+    try {
+      if (!notification.isRead && notification._id) {
+        await markAsRead(notification._id);
+        await fetchUnreadCount();
+      }
+      // TODO: optional navigation based on notification.relatedPost/_id
+    } catch (_) {
+      // no-op
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+      await fetchUnreadCount();
+    } catch (_) {
+      // no-op
+    }
+  };
 
   const handlePostClick = () => {
     navigate("/");
@@ -110,17 +125,26 @@ const LeftSidebar = () => {
                   <div key={item.label} className="relative w-full">
                     <button
                       type="button"
-                      className={itemClasses}
+                      className={itemClasses + " relative"}
                       onClick={handleNotifClick}
                       aria-label="Show notifications"
                     >
-                      {item.icon}
+                      <div className="relative">
+                        {item.icon}
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-semibold text-lg max-lg:hidden">{item.label}</span>
                     </button>
                     <NotificationDropdown
                       open={notifOpen}
                       notifications={notifications}
                       onClose={() => setNotifOpen(false)}
+                      onItemClick={handleNotificationItemClick}
+                      onMarkAllRead={handleMarkAllAsRead}
                     />
                   </div>
                 );

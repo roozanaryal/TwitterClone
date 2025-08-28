@@ -24,11 +24,18 @@ const FollowersModal = ({ isOpen, onClose, userId, type, username }) => {
     setError(null);
     
     try {
+      if (!userId) {
+        throw new Error('User ID is required');
+      }
+      
       const endpoint = type === 'followers' 
         ? `users/${userId}/followers` 
         : `users/${userId}/following`;
       
+      console.log('Fetching from endpoint:', endpoint);
       const data = await callAPI(endpoint, 'GET');
+      console.log('API response:', data);
+      
       setUsers(data.users || []);
       
       // Initialize following states
@@ -39,7 +46,7 @@ const FollowersModal = ({ isOpen, onClose, userId, type, username }) => {
       setFollowingStates(states);
     } catch (err) {
       console.error('Error fetching users:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
