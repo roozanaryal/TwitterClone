@@ -1,8 +1,6 @@
-import { createContext, useContext, useRef } from "react";
-
-const PostFocusContext = createContext({ focusPostInput: () => {} });
-
-export const usePostFocus = () => useContext(PostFocusContext);
+import { useRef } from "react";
+import PropTypes from "prop-types";
+import { PostFocusContext } from "../hooks/usePostFocus.js";
 
 export const PostFocusProvider = ({ children }) => {
   const focusFn = useRef(() => {});
@@ -21,3 +19,7 @@ export const PostFocusProvider = ({ children }) => {
     </PostFocusContext.Provider>
   );
 };
+
+PostFocusProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+}

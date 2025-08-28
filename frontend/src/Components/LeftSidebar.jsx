@@ -5,7 +5,7 @@ import { CiBookmark } from "react-icons/ci";
 import { AiOutlineLogout } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
-import { usePostFocus } from "../context/PostFocusContext";
+import { usePostFocus } from "../hooks/usePostFocus.js";
 import { useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 
