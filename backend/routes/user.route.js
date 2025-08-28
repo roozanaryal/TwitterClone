@@ -18,7 +18,7 @@ router.put("/bio", authMiddleware, updateBio);
 router.get("/bio", authMiddleware, getBio);
 router.get("/suggested", authMiddleware, getSuggestedUsers);
 router.get("/search", authMiddleware, searchUsers);
-router.get("/profile/:username", authMiddleware, getMyProfile);
+router.get("/profile/:username", authMiddleware, getOtherUserProfile);
 router.get("/otherprofile/:username", authMiddleware, getOtherUserProfile);
 router.post("/follow/:id", authMiddleware, followUser);
 router.post("/unfollow/:id", authMiddleware, unfollowUser);

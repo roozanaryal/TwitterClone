@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
       <div className="flex items-center justify-between py-3">
          <div className="flex items-center">
             <Avatar
-               src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.fullName}&background=random`}
+               src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
                size="40"
                round={true}
             />
@@ -72,21 +72,24 @@ const RightSidebar = () => {
    const callAPI = useAPICall();
    const { authUser } = useAuthContext();
 
-   // Fetch suggested users
-   const fetchSuggestedUsers = useCallback(async () => {
-      try {
-         const data = await callAPI('users/suggested', 'GET');
-         setSuggestedUsers(data.users || []);
-      } catch (error) {
-         console.error('Error fetching suggested users:', error);
-      }
-   }, [callAPI]);
-
+   // Fetch suggested users only once when component mounts
+   const [hasFetchedSuggested, setHasFetchedSuggested] = useState(false);
+   
    useEffect(() => {
-      if (authUser) {
-         fetchSuggestedUsers();
-      }
-   }, [authUser, fetchSuggestedUsers]);
+      if (!authUser || hasFetchedSuggested) return;
+      
+      const fetchSuggestedUsers = async () => {
+         try {
+            const data = await callAPI('users/suggested', 'GET');
+            setSuggestedUsers(data.users || []);
+            setHasFetchedSuggested(true);
+         } catch (error) {
+            console.error('Error fetching suggested users:', error);
+         }
+      };
+
+      fetchSuggestedUsers();
+   }, [authUser, hasFetchedSuggested, callAPI]);
 
    // Handle search
    const handleSearch = useCallback(async (query) => {
