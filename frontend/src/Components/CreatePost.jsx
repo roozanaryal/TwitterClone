@@ -1,27 +1,15 @@
 import Avatar from "react-avatar";
 import { CiImageOn } from "react-icons/ci";
 import { useRef, useState } from "react";
+import PropTypes from "prop-types";
 // import { usePostFocus } from "../context/PostFocusContext";
 import useCreatePost from "../hooks/useCreatePost";
+import { useAuthContext } from "../context/AuthContext";
 
-const CreatePost = () => {
+const CreatePost = ({ onPostCreated }) => {
   const inputRef = useRef(null);
-  // const { setFocusFn } = usePostFocus();
+  const { authUser } = useAuthContext();
   const [description, setDescription] = useState("");
-  // const [content, setContent] = useState("");
-
-  // useEffect(() => {
-  //    setFocusFn(() => () => {
-  //      if (inputRef.current) {
-  //        inputRef.current.focus();
-  //        // Select all text or place cursor at end for immediate typing
-  //        const val = inputRef.current.value;
-  //        inputRef.current.value = '';
-  //        inputRef.current.value = val;
-  //      }
-  //    });
-  // }, [setFocusFn]);
-
   const { createPost } = useCreatePost();
 
   const handleSubmit = async (e) => {
@@ -29,6 +17,9 @@ const CreatePost = () => {
     try {
       await createPost(description, description); // Send both fields to pass backend validation
       setDescription(""); // clear input on success
+      if (onPostCreated) {
+        onPostCreated(); // Refresh posts after creation
+      }
     } catch (error) {
       // Optionally show error to user
       alert(error.message || "Failed to create post");
@@ -37,18 +28,10 @@ const CreatePost = () => {
   return (
     <div className="w-[100%]">
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center justify-evenly border-b border-gray-200">
-          <div className="cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3">
-            <h1 className="font-semibold text-gray-600 text-lg">For You</h1>
-          </div>
-          <div className="cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3">
-            <h1 className="font-semibold text-gray-600 text-lg">Following</h1>
-          </div>
-        </div>
         <div className="flex items-center p-4 bg-white">
           <div>
             <Avatar
-              src="https://imgs.search.brave.com/JGCZZygUlFTk8RW8L5uyeuIACCp0BsQI8IhaYyZmS4k/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9yZXMu/Y2xvdWRpbmFyeS5j/b20vZGVtby9pbWFn/ZS91cGxvYWQvd18x/NTAsaF8xNTAsY19m/aWxsLGdfZmFjZSxy/X21heC9mcm9udF9m/YWVlLnBuZw"
+              src={authUser?.profilePicture || authUser?.profilePic || `https://ui-avatars.com/api/?name=${authUser?.name || 'User'}&background=random`}
               size="40"
               round={true}
             />
@@ -77,6 +60,10 @@ const CreatePost = () => {
       </form>
     </div>
   );
+};
+
+CreatePost.propTypes = {
+  onPostCreated: PropTypes.func,
 };
 
 export default CreatePost;

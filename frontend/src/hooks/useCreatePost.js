@@ -6,7 +6,7 @@ const useCreatePost = () => {
   const createPost = async (description, content = "") => {
     try {
       if (!description) {
-        throw new Error("User not found and description is required");
+        throw new Error("Description is required");
       }
 
       const data = await callAPI("/tweets/createpost", "POST", {

@@ -1,115 +1,59 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useAuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import useAPICall from '../api/useAPICall';
 
-const useGetPost = (type = 'all', options = {}) => {
+const useGetPost = (type = 'all') => {
   const { authUser } = useAuthContext();
+  const callAPI = useAPICall();
   const [posts, setPosts] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [cursor, setCursor] = useState(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchPosts = async ({ pageParam = null }) => {
+  const fetchPosts = async () => {
+    if (!authUser) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authUser.token}`,
-        },
-        params: {
-          limit: options.limit || 10,
-          ...(pageParam && { cursor: pageParam }),
-          ...(options.section && { section: options.section }),
-          ...(options.userId && { userId: options.userId }),
-        },
-      };
-
-      let endpoint = '/api/tweet/';
+      let endpoint = 'tweets/';
       switch (type) {
         case 'following':
           endpoint += 'followingfeed';
           break;
         case 'user':
-          endpoint += 'myposts';
+          endpoint += 'getmyposts';
           break;
         default:
           endpoint += 'getposts';
       }
 
-      const response = await axios.get(endpoint, config);
-      return response.data;
+      const data = await callAPI(endpoint, 'GET');
+      setPosts(data.posts || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch posts');
-    }
-  };
-
-  const {
-    data,
-    isLoading,
-    isError,
-    error: queryError,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ['posts', type, cursor, options],
-    queryFn: ({ pageParam }) => fetchPosts({ pageParam }),
-    getNextPageParam: (lastPage) => {
-      return lastPage.nextCursor || undefined;
-    },
-    enabled: !!authUser?.token,
-    refetchOnWindowFocus: false,
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
-
-  // Handle infinite scroll pagination
-  const loadMore = async () => {
-    if (isLoadingMore || !hasMore) return;
-    
-    setIsLoadingMore(true);
-    try {
-      const newData = await fetchPosts({ pageParam: cursor });
-      setPosts((prev) => [...prev, ...newData.posts]);
-      setCursor(newData.nextCursor);
-      setHasMore(!!newData.nextCursor);
-    } catch (err) {
-      setError(err.message);
+      setError(error.message || 'Failed to fetch posts');
     } finally {
-      setIsLoadingMore(false);
+      setIsLoading(false);
     }
   };
 
-  // Update posts when data changes
+  // Fetch posts when component mounts or type changes
   useEffect(() => {
-    if (data) {
-      const allPosts = data.pages.flatMap((page) => page.posts);
-      setPosts(allPosts);
-      const lastPage = data.pages[data.pages.length - 1];
-      setCursor(lastPage.nextCursor);
-      setHasMore(!!lastPage.nextCursor);
-    }
-  }, [data]);
+    fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, authUser]);
 
-  // Refresh posts
-  const refreshPosts = async () => {
-    setCursor(null);
-    await refetch();
+  // Refresh posts function
+  const refreshPosts = () => {
+    fetchPosts();
   };
 
   return {
     posts,
     isLoading,
-    isError,
-    error: error || queryError?.message,
-    hasMore,
-    loadMore,
-    isLoadingMore,
+    error,
     refreshPosts,
-    isRefreshing: isFetching && !isLoadingMore,
   };
 };
 

@@ -44,6 +44,14 @@ export const AuthContextProvider = ({ children }) => {
         });
         if (res.ok) {
           const user = await res.json();
+          // Ensure token is included in the user object
+          if (user && !user.token) {
+            // If no token in response, try to get from localStorage
+            const storedUser = JSON.parse(localStorage.getItem("xCloneUser"));
+            if (storedUser && storedUser.token) {
+              user.token = storedUser.token;
+            }
+          }
           setAuthUser(user);
         } else {
           setAuthUser(null);

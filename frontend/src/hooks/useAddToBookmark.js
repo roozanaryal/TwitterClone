@@ -7,7 +7,7 @@ const useAddToBookmark = () => {
 
   const addToBookmark = async (postId) => {
     try {
-      const response = await callAPI(`/api/bookmarks/${postId}`, "POST");
+      const response = await callAPI(`/bookmarks/${postId}`, "POST");
       return { success: true, data: response };
     } catch (error) {
       console.log("Error adding bookmark:", error);

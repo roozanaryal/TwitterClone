@@ -45,6 +45,7 @@ export const signup = async (req, res) => {
         name: newUser.name,
         username: newUser.username,
         email: newUser.email,
+        token: token, // Include token in response
       });
     } else {
       res.status(400).json({ error: "Invalid user data" });
@@ -94,6 +95,7 @@ export const login = async (req, res) => {
       _id: user._id,
       name: user.name,
       username: user.username,
+      token: token, // Include token in response
     });
   } catch (error) {
     res.status(500).json({

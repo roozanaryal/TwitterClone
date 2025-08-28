@@ -7,9 +7,12 @@ export function useAPICall() {
 
   const callAPI = async (urlPath, methodType, body, options = {}) => {
     const { skipAuth = false } = options;
-    if (!skipAuth && !authUser?.token) {
-      throw new Error("Auth token not found");
+    
+    // For non-auth routes, we still check if user is logged in (except for login/signup)
+    if (!skipAuth && !authUser) {
+      throw new Error("User not authenticated");
     }
+    
     if (!methodType) {
       throw new Error("Method type not found");
     }
@@ -21,12 +24,9 @@ export function useAPICall() {
         method: methodType,
         headers: {
           "Content-Type": "application/json",
-          ...(!skipAuth && authUser && authUser.token
-            ? { Authorization: `Bearer ${authUser.token}` }
-            : {}),
         },
         body: body ? JSON.stringify(body) : undefined,
-        credentials: "include",
+        credentials: "include", // This sends the httpOnly cookie
       });
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {

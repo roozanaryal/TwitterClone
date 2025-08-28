@@ -1,7 +1,9 @@
+import useAPICall from "../api/useAPICall";
 import { useAuthContext } from "../context/AuthContext";
-export const baseUrl = "http://localhost:5000";
 const useSignup = () => {
   const { setAuthUser } = useAuthContext();
+  const callAPI = useAPICall();
+  
   const signup = async ({ name, username, password, email }) => {
     try {
       // All validation is now handled by handleInputErrors, which throws on failure
@@ -12,29 +14,13 @@ const useSignup = () => {
         email,
       });
 
-      // Make the API request
-      const res = await fetch(`${baseUrl}/api/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(localStorage.getItem("xClone")
-            ? { Authorization: `Bearer ${localStorage.getItem("xClone")}` }
-            : {}),
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          username: username.trim().toLowerCase(),
-          password,
-          email,
-        }),
-        credentials: "include",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Registration failed. Please try again.");
-      }
+      // Make the API request using the useAPICall hook
+      const data = await callAPI("/auth/signup", "POST", {
+        name: name.trim(),
+        username: username.trim().toLowerCase(),
+        password,
+        email,
+      }, { skipAuth: true });
 
       if (!data || !data._id) {
         throw new Error("Invalid response from server");
@@ -47,6 +33,7 @@ const useSignup = () => {
       return data;
     } catch (error) {
       console.log(error);
+      throw error;
     }
   };
   return { signup };

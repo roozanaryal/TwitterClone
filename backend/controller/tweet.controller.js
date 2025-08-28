@@ -75,12 +75,26 @@ export const getPosts = async (req, res) => {
         postOwner: { $in: followingIds },
       })
         .populate("postOwner", "username name profilePicture")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "postOwner",
+            select: "username name profilePicture"
+          }
+        })
         .sort({ createdAt: -1 })
         .limit(20);
     } else {
       // Get all posts for explore
       posts = await Post.find()
         .populate("postOwner", "username name profilePicture")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "postOwner",
+            select: "username name profilePicture"
+          }
+        })
         .sort({ createdAt: -1 })
         .limit(20);
     }
@@ -109,12 +123,17 @@ export const getFollowingFeed = async (req, res) => {
       });
     }
 
-    // Get posts from followed users
-    const followingIds = [...user.following.map((id) => id.toString()), userId];
-    const posts = await Post.find({
-      postOwner: { $in: followingIds },
-    })
+    // Get posts from followed users only (exclude own posts)
+    const followingIds = user.following.map((id) => id.toString());
+    const posts = await Post.find({ postOwner: { $in: followingIds } })
       .populate("postOwner", "username name profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "postOwner",
+          select: "username name profilePicture"
+        }
+      })
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -137,6 +156,13 @@ export const getMyPosts = async (req, res) => {
     // Get user's posts
     const posts = await Post.find({ postOwner: userId })
       .populate("postOwner", "username name profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "postOwner",
+          select: "username name profilePicture"
+        }
+      })
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -159,6 +185,13 @@ export const getOtherUserPosts = async (req, res) => {
     // Get user's posts
     const posts = await Post.find({ postOwner: userId })
       .populate("postOwner", "username name profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "postOwner",
+          select: "username name profilePicture"
+        }
+      })
       .sort({ createdAt: -1 })
       .limit(20);
 
