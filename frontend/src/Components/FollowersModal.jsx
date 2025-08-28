@@ -111,7 +111,7 @@ const FollowersModal = ({ isOpen, onClose, userId, type, username }) => {
                 <div key={user._id} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Avatar
-                      src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+                      src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.fullName || user.name}&background=random`}
                       size="48"
                       round={true}
                     />

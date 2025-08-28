@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
       <div className="flex items-center justify-between py-3">
          <div className="flex items-center">
             <Avatar
-               src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+               src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.fullName || user.name}&background=random`}
                size="40"
                round={true}
             />

@@ -185,7 +185,12 @@ const Profile = () => {
         />
         <div className="absolute top-52 ml-2 border-4 border-white rounded-full">
           <Avatar
-            src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.fullName}&background=random`}
+            src={
+              user.profilePicture ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.fullName || user.name || user.username || "User"
+              )}&background=random`
+            }
             size="120"
             round={true}
           />
@@ -231,59 +236,64 @@ const Profile = () => {
             <span className="text-gray-500 ml-1">Followers</span>
           </div>
         </div>
-        {/* User's Posts */}
-        <div className="m-4">
-          <h2 className="font-bold text-lg mb-2">Posts</h2>
-          {userPosts.length > 0 ? (
-            <div className="w-full">
-              {userPosts.map((post) => (
-                <div className="border-b border-gray-200 w-full" key={post._id}>
-                  <div className="flex p-4">
-                    <Avatar 
-                      src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.fullName}&background=random`}
-                      size="40" 
-                      round={true} 
-                    />
-                    <div className="ml-2 flex-1">
-                      <div className="flex items-center ml-2">
-                        <h1 className="font-bold">{user.fullName}</h1>
-                        <p className="text-gray-500 text-sm ml-1">
-                          @{user.username} · {formatTimeAgo(post.createdAt)}
-                        </p>
+      </div>
+      {/* User's Posts */}
+      <div className="m-4">
+        <h2 className="font-bold text-lg mb-2">Posts</h2>
+        {userPosts.length > 0 ? (
+          <div className="w-full">
+            {userPosts.map((post) => (
+              <div className="border-b border-gray-200 w-full" key={post._id}>
+                <div className="flex p-4">
+                  <Avatar
+                    src={
+                      user.profilePicture ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        user.fullName || user.name || user.username || "User"
+                      )}&background=random`
+                    }
+                    size="40"
+                    round={true}
+                  />
+                  <div className="ml-2 flex-1">
+                    <div className="flex items-center ml-2">
+                      <h1 className="font-bold">{user.fullName}</h1>
+                      <p className="text-gray-500 text-sm ml-1">
+                        @{user.username} · {formatTimeAgo(post.createdAt)}
+                      </p>
+                    </div>
+                    <div className="ml-2">
+                      <p className="mt-1">{post.description}</p>
+                      {post.content && post.content !== post.description && (
+                        <p className="mt-1 text-gray-700">{post.content}</p>
+                      )}
+                    </div>
+                    <div className="flex justify-between my-3 ml-2 max-w-md">
+                      <div className="flex items-center">
+                        <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
+                          <FaRegComment size="20px" />
+                        </div>
+                        <p className="text-sm text-gray-500">{post.comments?.length || 0}</p>
                       </div>
-                      <div className="ml-2">
-                        <p className="mt-1">{post.description}</p>
-                        {post.content && post.content !== post.description && (
-                          <p className="mt-1 text-gray-700">{post.content}</p>
-                        )}
+                      <div className="flex items-center">
+                        <div className="p-2 hover:bg-red-200 rounded-full cursor-pointer">
+                          {post.likes?.includes(authUser?._id) ? (
+                            <FaHeart size="20px" className="text-red-500" />
+                          ) : (
+                            <CiHeart size="20px" />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">{post.likes?.length || 0}</p>
                       </div>
-                      <div className="flex justify-between my-3 ml-2 max-w-md">
-                        <div className="flex items-center">
-                          <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
-                            <FaRegComment size="20px" />
-                          </div>
-                          <p className="text-sm text-gray-500">{post.comments?.length || 0}</p>
+                      <div className="flex items-center">
+                        <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
+                          {post.bookmarks?.includes(authUser?._id) ? (
+                            <CiBookmark size="20px" className="text-blue-500 fill-current" />
+                          ) : (
+                            <CiBookmark size="20px" />
+                          )}
                         </div>
-                        <div className="flex items-center">
-                          <div className="p-2 hover:bg-red-200 rounded-full cursor-pointer">
-                            {post.likes?.includes(authUser?._id) ? (
-                              <FaHeart size="20px" className="text-red-500" />
-                            ) : (
-                              <CiHeart size="20px" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">{post.likes?.length || 0}</p>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="p-2 hover:bg-blue-200 rounded-full cursor-pointer">
-                            {post.bookmarks?.includes(authUser?._id) ? (
-                              <CiBookmark size="20px" className="text-blue-500 fill-current" />
-                            ) : (
-                              <CiBookmark size="20px" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">{post.bookmarks?.length || 0}</p>
-                        </div>
+                        <p className="text-sm text-gray-500">{post.bookmarks?.length || 0}</p>
                       </div>
                     </div>
                   </div>

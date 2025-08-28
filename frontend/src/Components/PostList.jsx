@@ -270,7 +270,7 @@ const PostList = forwardRef(({ type }, ref) => {
         <div className="border-b border-gray-200 w-full" key={post._id}>
           <div className="flex p-4">
             <Avatar 
-              src={post.postOwner?.profilePicture || post.postOwner?.profilePic || `https://ui-avatars.com/api/?name=${post.postOwner?.name || 'User'}&background=random`}
+              src={post.postOwner?.profilePicture || post.postOwner?.profilePic || `https://ui-avatars.com/api/?name=${post.postOwner?.fullName || post.postOwner?.name || 'User'}&background=random`}
               size="40" 
               round={true} 
             />
