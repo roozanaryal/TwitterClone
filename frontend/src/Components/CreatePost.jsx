@@ -31,7 +31,8 @@ const CreatePost = ({ onPostCreated }) => {
         <div className="flex items-center p-4 bg-white">
           <div>
             <Avatar
-              src={authUser?.profilePicture || authUser?.profilePic || `https://ui-avatars.com/api/?name=${authUser?.name || 'User'}&background=random`}
+              src={authUser?.profilePicture || ""}
+              name={authUser?.name || authUser?.username}
               size="40"
               round={true}
             />

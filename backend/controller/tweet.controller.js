@@ -66,14 +66,8 @@ export const getPosts = async (req, res) => {
     let posts = [];
 
     if (section === "foryou") {
-      // Get posts from followed users and self
-      const followingIds = [
-        ...user.following.map((id) => id.toString()),
-        userId,
-      ];
-      posts = await Post.find({
-        postOwner: { $in: followingIds },
-      })
+      // Get all posts for "For You" feed (like Twitter's algorithm)
+      posts = await Post.find()
         .populate("postOwner", "username name profilePicture")
         .populate({
           path: "comments",

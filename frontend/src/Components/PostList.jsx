@@ -115,7 +115,7 @@ const PostList = forwardRef(({ type }, ref) => {
         _id: authUser._id,
         username: authUser.username,
         name: authUser.name,
-        profilePicture: authUser.profilePicture
+        profilePicture: authUser.profilePicture || ""
       },
       createdAt: new Date().toISOString()
     };
@@ -340,7 +340,7 @@ const PostList = forwardRef(({ type }, ref) => {
                   {/* Comment Input */}
                   <div className="flex items-center gap-2">
                     <Avatar
-                      src={authUser?.profilePicture}
+                      src={authUser?.profilePicture || ""}
                       name={authUser?.name || authUser?.username}
                       size="32"
                       round={true}
