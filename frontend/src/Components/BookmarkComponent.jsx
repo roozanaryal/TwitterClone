@@ -19,7 +19,7 @@ const BookmarkComponent = () => {
         });
         const data = await res.json();
         console.log(data);
-        if (!res.ok || !data.success) {
+        if (!res.ok) {
           throw new Error(data.message || "Failed to fetch bookmarks");
         }
         setBookmarks(data.posts || []);
@@ -68,7 +68,7 @@ const BookmarkComponent = () => {
                   </p>
                 </div>
                 <div>
-                  <p>{tweet?.content || ""}</p>
+                  <p>{tweet?.description || tweet?.content || ""}</p>
                 </div>
                 <div className="flex justify-between my-3">
                   <div className="flex items-center">

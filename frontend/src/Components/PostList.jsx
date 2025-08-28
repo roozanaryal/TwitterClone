@@ -88,17 +88,41 @@ const PostList = forwardRef(({ type }, ref) => {
     }
   };
 
-  // Handle bookmark toggle
+  // Handle bookmark toggle with optimistic UI
   const handleBookmark = async (postId, isBookmarked) => {
+    // Optimistic UI update
+    setPosts(prevPosts => 
+      prevPosts.map(post => {
+        if (post._id === postId) {
+          const updatedBookmarks = isBookmarked 
+            ? (post.bookmarks || []).filter(id => id !== authUser._id)
+            : [...(post.bookmarks || []), authUser._id];
+          return { ...post, bookmarks: updatedBookmarks };
+        }
+        return post;
+      })
+    );
+
     try {
       if (isBookmarked) {
         await removeFromBookmark(postId);
       } else {
         await addToBookmark(postId);
       }
-      // No refresh needed for bookmarks as they don't show status in UI yet
     } catch (error) {
       console.error("Error toggling bookmark:", error);
+      // Revert optimistic update on error
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post._id === postId) {
+            const revertedBookmarks = isBookmarked 
+              ? [...(post.bookmarks || []), authUser._id]
+              : (post.bookmarks || []).filter(id => id !== authUser._id);
+            return { ...post, bookmarks: revertedBookmarks };
+          }
+          return post;
+        })
+      );
     }
   };
 
@@ -289,11 +313,15 @@ const PostList = forwardRef(({ type }, ref) => {
                 <div className="flex items-center">
                   <div 
                     className="p-2 hover:bg-blue-200 rounded-full cursor-pointer"
-                    onClick={() => handleBookmark(post._id, false)} // TODO: Add bookmark status check
+                    onClick={() => handleBookmark(post._id, post.bookmarks?.includes(authUser?._id))}
                   >
-                    <CiBookmark size="20px" />
+                    {post.bookmarks?.includes(authUser?._id) ? (
+                      <CiBookmark size="20px" className="text-blue-500 fill-current" />
+                    ) : (
+                      <CiBookmark size="20px" />
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500">0</p>
+                  <p className="text-sm text-gray-500">{post.bookmarks?.length || 0}</p>
                 </div>
               </div>
               

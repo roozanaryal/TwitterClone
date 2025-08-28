@@ -34,6 +34,10 @@ export const addBookmark = async (req, res) => {
     user.bookmarks.push(postId);
     await user.save();
 
+    // Also add user to post's bookmarks array
+    post.bookmarks.push(userId);
+    await post.save();
+
     res.status(200).json({
       message: "Post bookmarked successfully",
     });
@@ -70,6 +74,13 @@ export const removeBookmark = async (req, res) => {
     user.bookmarks = user.bookmarks.filter(id => id.toString() !== postId);
     await user.save();
 
+    // Also remove user from post's bookmarks array
+    const post = await Post.findById(postId);
+    if (post) {
+      post.bookmarks = post.bookmarks.filter(id => id.toString() !== userId);
+      await post.save();
+    }
+
     res.status(200).json({
       message: "Post removed from bookmarks",
     });
@@ -86,8 +97,24 @@ export const getBookmarks = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Get user with bookmarks
-    const user = await User.findById(userId).populate("bookmarks");
+    // Get user with populated bookmarks
+    const user = await User.findById(userId).populate({
+      path: "bookmarks",
+      populate: [
+        {
+          path: "postOwner",
+          select: "username name profilePicture"
+        },
+        {
+          path: "comments",
+          populate: {
+            path: "postOwner",
+            select: "username name profilePicture"
+          }
+        }
+      ]
+    });
+    
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -95,7 +122,7 @@ export const getBookmarks = async (req, res) => {
     }
 
     res.status(200).json({
-      bookmarks: user.bookmarks,
+      posts: user.bookmarks,
     });
   } catch (error) {
     console.log(error);
