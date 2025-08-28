@@ -9,6 +9,8 @@ import {
   getMyProfile,
   getOtherUserProfile,
   searchUsers,
+  getUserFollowers,
+  getUserFollowing,
 } from "../controller/user.controller.js";
 import { searchResult } from "../controller/search.controller.js";
 const router = express.Router();
@@ -20,6 +22,8 @@ router.get("/suggested", authMiddleware, getSuggestedUsers);
 router.get("/search", authMiddleware, searchUsers);
 router.get("/profile/:username", authMiddleware, getOtherUserProfile);
 router.get("/otherprofile/:username", authMiddleware, getOtherUserProfile);
+router.get("/:userId/followers", authMiddleware, getUserFollowers);
+router.get("/:userId/following", authMiddleware, getUserFollowing);
 router.post("/follow/:id", authMiddleware, followUser);
 router.post("/unfollow/:id", authMiddleware, unfollowUser);
 router.post("/search", authMiddleware, searchResult);

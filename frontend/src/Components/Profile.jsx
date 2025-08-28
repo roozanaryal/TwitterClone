@@ -7,6 +7,7 @@ import { CiHeart, CiBookmark } from "react-icons/ci";
 import { useAuthContext } from "../context/AuthContext";
 import useGetOtherUserProfile from "../hooks/useGetOtherUserProfile";
 import useAPICall from "../api/useAPICall";
+import FollowersModal from "./FollowersModal";
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString) => {
@@ -32,6 +33,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('followers');
   
   const isOwnProfile = !username || username === authUser?.username;
 
@@ -125,6 +128,16 @@ const Profile = () => {
     }
   };
 
+  // Handle opening followers/following modal
+  const openModal = (type) => {
+    setModalType(type);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="px-4 py-8 text-center">
@@ -203,11 +216,17 @@ const Profile = () => {
           <p>{user.bio || 'No bio available'}</p>
         </div>
         <div className="m-4 flex space-x-4 text-sm">
-          <div>
+          <div 
+            className="cursor-pointer hover:underline"
+            onClick={() => openModal('following')}
+          >
             <span className="font-bold">{user.following?.length || 0}</span>
             <span className="text-gray-500 ml-1">Following</span>
           </div>
-          <div>
+          <div 
+            className="cursor-pointer hover:underline"
+            onClick={() => openModal('followers')}
+          >
             <span className="font-bold">{user.followers?.length || 0}</span>
             <span className="text-gray-500 ml-1">Followers</span>
           </div>
@@ -280,6 +299,15 @@ const Profile = () => {
             </div>
           )}
         </div>
+        
+        {/* Followers/Following Modal */}
+        <FollowersModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          userId={user?._id}
+          type={modalType}
+          username={user?.username}
+        />
       </div>
     </div>
   );

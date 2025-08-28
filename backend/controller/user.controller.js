@@ -291,3 +291,43 @@ export const getMyProfile = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Get user's followers
+export const getUserFollowers = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId)
+      .populate('followers', '-password')
+      .select('followers');
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.status(200).json({ users: user.followers });
+  } catch (error) {
+    console.error("Error in getUserFollowers: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Get user's following
+export const getUserFollowing = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId)
+      .populate('following', '-password')
+      .select('following');
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.status(200).json({ users: user.following });
+  } catch (error) {
+    console.error("Error in getUserFollowing: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
