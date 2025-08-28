@@ -1,11 +1,12 @@
 import { useAuthContext } from "../context/AuthContext";
+import { useCallback } from "react";
 
 const baseUrl = "http://localhost:5000/api";
 
 export function useAPICall() {
   const { authUser } = useAuthContext();
 
-  const callAPI = async (urlPath, methodType, body, options = {}) => {
+  const callAPI = useCallback(async (urlPath, methodType, body, options = {}) => {
     const { skipAuth = false } = options;
     
     // For non-auth routes, we still check if user is logged in (except for login/signup)
@@ -44,7 +45,7 @@ export function useAPICall() {
       console.error("API call error:", error);
       throw error;
     }
-  };
+  }, [authUser]);
 
   return callAPI;
 }

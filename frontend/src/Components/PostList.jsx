@@ -207,6 +207,34 @@ const PostList = forwardRef(({ type }, ref) => {
     );
   }
 
+  const handlePostUpdate = (postId, action, value) => {
+    setPosts(prev => prev.map(post => {
+      if (post._id === postId) {
+        if (action === 'like') {
+          return {
+            ...post,
+            likes: value 
+              ? [...(post.likes || []), authUser._id]
+              : (post.likes || []).filter(id => id !== authUser._id)
+          };
+        } else if (action === 'bookmark') {
+          return {
+            ...post,
+            bookmarks: value 
+              ? [...(post.bookmarks || []), authUser._id]
+              : (post.bookmarks || []).filter(id => id !== authUser._id)
+          };
+        } else if (action === 'comment') {
+          return {
+            ...post,
+            comments: [...(post.comments || []), value]
+          };
+        }
+      }
+      return post;
+    }));
+  };
+
   if (error) {
     return (
       <div className="p-4 text-center text-red-500">
@@ -221,37 +249,37 @@ const PostList = forwardRef(({ type }, ref) => {
     );
   }
 
-  if (!posts || posts.length === 0) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        <p>
-          {type === "following" 
-            ? "You don't follow anyone yet. Start following users to see their posts here!" 
-            : "No posts available yet. Be the first to post something!"
-          }
-        </p>
-      </div>
-    );
-  }
-
-  // No local time helpers needed; Tweet handles display formatting
-
   return (
     <div className="w-full">
-      {posts.map((post) => (
-        <Tweet
-          key={post._id}
-          post={post}
-          authUserId={authUser?._id}
-          onToggleLike={handleLike}
-          onToggleBookmark={handleBookmark}
-          showComment={!!showCommentInput[post._id]}
-          onToggleComment={() => toggleCommentInput(post._id)}
-          commentInput={commentInputs[post._id] || ""}
-          onChangeComment={(val) => setCommentInputs(prev => ({ ...prev, [post._id]: val }))}
-          onSubmitComment={() => handleCommentSubmit(post._id)}
-        />
-      ))}
+      {posts.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">No posts available.</div>
+      ) : (
+        posts.map((post) => (
+          <Tweet
+            key={post._id}
+            post={{
+              ...post,
+              postOwner: {
+                _id: post.postOwner._id,
+                username: post.postOwner.username,
+                name: post.postOwner.name || post.postOwner.fullName,
+                profilePicture: post.postOwner.profilePicture,
+              },
+            }}
+            enableInteractions={true}
+            onPostUpdate={handlePostUpdate}
+            // Legacy handlers for backward compatibility
+            authUserId={authUser?._id}
+            onToggleLike={handleLike}
+            onToggleBookmark={handleBookmark}
+            showComment={!!showCommentInput[post._id]}
+            onToggleComment={() => toggleCommentInput(post._id)}
+            commentInput={commentInputs[post._id] || ""}
+            onChangeComment={(val) => setCommentInputs(prev => ({ ...prev, [post._id]: val }))}
+            onSubmitComment={() => handleCommentSubmit(post._id)}
+          />
+        ))
+      )}
     </div>
   );
 });
