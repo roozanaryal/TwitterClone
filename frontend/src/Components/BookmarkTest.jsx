@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useAddToBookmark from '../hooks/useAddToBookmark';
 import useGetBookmarks from '../hooks/useGetBookmarks';
 
