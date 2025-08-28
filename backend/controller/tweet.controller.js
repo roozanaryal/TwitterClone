@@ -269,7 +269,7 @@ export const unlikePost = async (req, res) => {
   }
 };
 
-export const deletePost = async () => {
+export const deletePost = async (req, res) => {
   try {
     const { id: postId } = req.params;
     const userId = req.user.id;

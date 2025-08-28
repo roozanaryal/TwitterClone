@@ -1,7 +1,6 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
-import User from "../models/user.model.js";
 
 export const updateBio = async (req, res) => {
   try {

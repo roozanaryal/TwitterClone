@@ -4,7 +4,6 @@ import {
   updateBio,
   getBio,
   getSuggestedUsers,
-  getUserProfile,
   followUser,
   unfollowUser,
   getMyProfile,
@@ -17,7 +16,7 @@ router.get("/me", authMiddleware, getMyProfile);
 router.put("/bio", authMiddleware, updateBio);
 router.get("/bio", authMiddleware, getBio);
 router.get("/suggested", authMiddleware, getSuggestedUsers);
-router.get("/profile/:username", authMiddleware, getUserProfile)
+router.get("/profile/:username", authMiddleware, getMyProfile);
 router.get("/otherprofile/:username", authMiddleware, getOtherUserProfile);
 router.post("/follow/:id", authMiddleware, followUser);
 router.post("/unfollow/:id", authMiddleware, unfollowUser);
