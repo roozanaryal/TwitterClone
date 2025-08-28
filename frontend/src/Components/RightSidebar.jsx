@@ -1,12 +1,13 @@
 import { CiSearch } from "react-icons/ci";
 import Avatar from "react-avatar";
 import { useState, useEffect, useCallback } from "react";
+import PropTypes from 'prop-types';
 import useAPICall from "../api/useAPICall";
 import { useAuthContext } from "../context/AuthContext";
 
 // UserCard component for displaying user info with follow button
 const UserCard = ({ user }) => {
-   const [isFollowing, setIsFollowing] = useState(false);
+   const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
    const [isLoading, setIsLoading] = useState(false);
    const callAPI = useAPICall();
 
@@ -57,10 +58,11 @@ const UserCard = ({ user }) => {
 
 UserCard.propTypes = {
    user: {
-      _id: '',
-      fullName: '',
-      username: '',
-      profilePicture: ''
+      _id: PropTypes.string.isRequired,
+      fullName: PropTypes.string,
+      username: PropTypes.string.isRequired,
+      profilePicture: PropTypes.string,
+      isFollowing: PropTypes.bool
    }
 };
 

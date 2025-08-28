@@ -1,6 +1,7 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import {
+  updateProfile,
   updateBio,
   getBio,
   getSuggestedUsers,
@@ -16,6 +17,7 @@ import { searchResult } from "../controller/search.controller.js";
 const router = express.Router();
 
 router.get("/me", authMiddleware, getMyProfile);
+router.put("/update", authMiddleware, updateProfile);
 router.put("/bio", authMiddleware, updateBio);
 router.get("/bio", authMiddleware, getBio);
 router.get("/suggested", authMiddleware, getSuggestedUsers);

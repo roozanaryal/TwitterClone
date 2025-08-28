@@ -2,6 +2,63 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, bio, profilePicture } = req.body;
+    const userId = req.user._id;
+
+    // Validation
+    if (name && typeof name !== "string") {
+      return res.status(400).json({ error: "Name must be a string" });
+    }
+
+    if (bio && typeof bio !== "string") {
+      return res.status(400).json({ error: "Bio must be a string" });
+    }
+
+    if (name && name.trim().length === 0) {
+      return res.status(400).json({ error: "Name cannot be empty" });
+    }
+
+    if (name && name.length > 50) {
+      return res.status(400).json({ error: "Name must be less than 50 characters" });
+    }
+
+    if (bio && bio.length > 160) {
+      return res.status(400).json({ error: "Bio must be less than 160 characters" });
+    }
+
+    if (profilePicture && typeof profilePicture !== "string") {
+      return res.status(400).json({ error: "Profile picture must be a valid URL" });
+    }
+
+    // Build update object
+    const updateData = {};
+    if (name !== undefined) updateData.name = name.trim();
+    if (bio !== undefined) updateData.bio = bio.trim();
+    if (profilePicture !== undefined) updateData.profilePicture = profilePicture.trim();
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, select: "-password" }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error in updateProfile: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const updateBio = async (req, res) => {
   try {
     const { bio } = req.body;
@@ -242,6 +299,10 @@ export const searchUsers = async (req, res) => {
 
     const searchQuery = q.trim();
 
+    // Get current user's following list
+    const currentUser = await User.findById(currentUserId).select('following');
+    const followingIds = currentUser.following || [];
+
     // Search users by username, fullName, or email
     const users = await User.find({
       _id: { $ne: currentUserId }, // Exclude current user
@@ -252,11 +313,18 @@ export const searchUsers = async (req, res) => {
       ],
     })
       .select("-password")
-      .limit(10);
+      .limit(10)
+      .lean(); // Convert to plain JavaScript objects
+
+    // Add follow status to each user
+    const usersWithFollowStatus = users.map(user => ({
+      ...user,
+      isFollowing: followingIds.some(id => id.toString() === user._id.toString())
+    }));
 
     res.status(200).json({
       success: true,
-      users,
+      users: usersWithFollowStatus,
     });
   } catch (error) {
     console.error("Error in searchUsers: ", error.message);

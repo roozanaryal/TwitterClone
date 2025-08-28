@@ -7,6 +7,7 @@ import { useAuthContext } from "../context/AuthContext";
 import useGetOtherUserProfile from "../hooks/useGetOtherUserProfile";
 import useAPICall from "../api/useAPICall";
 import FollowersModal from "./FollowersModal";
+import EditProfileModal from "./EditProfileModal";
 
 const Profile = () => {
   const { username } = useParams();
@@ -21,6 +22,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('followers');
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
   // Local state for per-post UI actions
   const [commentInputs, setCommentInputs] = useState({});
   const [showCommentInput, setShowCommentInput] = useState({});
@@ -125,6 +127,19 @@ const Profile = () => {
 
   const closeModal = () => {
     setModalOpen(false);
+  };
+
+  // Handle edit profile modal
+  const openEditProfile = () => {
+    setEditProfileOpen(true);
+  };
+
+  const closeEditProfile = () => {
+    setEditProfileOpen(false);
+  };
+
+  const handleUserUpdate = (updatedUser) => {
+    setUser(updatedUser);
   };
 
   // Local handlers for post interactions (optimistic UI)
@@ -241,7 +256,10 @@ const Profile = () => {
         </div>
         <div className="text-right m-4">
           {isOwnProfile ? (
-            <button className="px-4 py-1 hover:bg-gray-200 rounded-full text-right border border-gray-400">
+            <button 
+              onClick={openEditProfile}
+              className="px-4 py-1 hover:bg-gray-200 rounded-full text-right border border-gray-400"
+            >
               Edit Profile
             </button>
           ) : (
@@ -324,6 +342,14 @@ const Profile = () => {
           userId={user?._id}
           type={modalType}
           username={user?.username}
+        />
+        
+        {/* Edit Profile Modal */}
+        <EditProfileModal
+          isOpen={editProfileOpen}
+          onClose={closeEditProfile}
+          user={user}
+          onUserUpdate={handleUserUpdate}
         />
       </div>
     </div>
