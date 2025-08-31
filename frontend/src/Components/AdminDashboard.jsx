@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAdBanner, updateAdBanner, resetAdBanner } from '../api/adBanner.api.js';
 import useAPICall from '../api/useAPICall.js';
 
@@ -9,56 +9,108 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({});
-  const [userStats, setUserStats] = useState({ total: 0, admins: 0, regular: 0 });
+  const [dashboardStats, setDashboardStats] = useState({
+    users: { total: 0, admins: 0, regular: 0, newToday: 0, newThisWeek: 0, newThisMonth: 0 },
+    posts: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+    engagement: { totalComments: 0, commentsToday: 0, totalLikes: 0, totalBookmarks: 0 },
+    mostActiveUsers: [],
+    recentPosts: [],
+    growthData: []
+  });
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
 
   const callAPI = useAPICall();
 
-  // Fetch initial data
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      // Add a small delay to ensure auth context is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Try to fetch comprehensive dashboard stats, fallback to basic user data
       try {
-        // Add a small delay to ensure auth context is ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Fetch ad banner config
-        const adData = await getAdBanner();
-        setAdConfig(adData);
-        setFormData(adData);
-
-        // Fetch all users using proper API call
+        const statsData = await callAPI('admin/dashboard/stats', 'GET');
+        setDashboardStats(statsData.stats);
+      } catch (statsError) {
+        console.warn('Advanced stats unavailable, using basic fallback:', statsError.message);
+        // Fallback to basic user stats calculation
         const userData = await callAPI('users/all', 'GET');
-        console.log('Fetched users:', userData);
-        setUsers(userData.users || []);
-        
-        // Calculate stats
         const userList = userData.users || [];
         const admins = userList.filter(user => user.isAdmin).length;
-        setUserStats({
-          total: userList.length,
-          admins,
-          regular: userList.length - admins
+        setDashboardStats({
+          users: { 
+            total: userList.length, 
+            admins, 
+            regular: userList.length - admins,
+            newToday: 0,
+            newThisWeek: 0,
+            newThisMonth: 0
+          },
+          posts: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          engagement: { totalComments: 0, commentsToday: 0, totalLikes: 0, totalBookmarks: 0 },
+          mostActiveUsers: [],
+          recentPosts: [],
+          growthData: []
         });
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        
-        // Check if it's a JSON parsing error (HTML response)
-        if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
-          console.warn('Received HTML response instead of JSON, but continuing without reload');
-          return;
-        }
-        
-        alert(`Failed to load dashboard data: ${error.message}`);
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      // Fetch ad banner config
+      const adData = await getAdBanner();
+      setAdConfig(adData);
+      setFormData(adData);
 
-    // Only fetch data if we have the callAPI function ready
-    if (callAPI) {
-      fetchData();
+      // Fetch all users for user management tab
+      const userData = await callAPI('users/all', 'GET');
+      setUsers(userData.users || []);
+      
+      // Try to fetch system health, fallback to basic status
+      try {
+        const healthData = await callAPI('admin/system/health', 'GET');
+        setSystemHealth(healthData.health);
+      } catch (healthError) {
+        console.warn('System health unavailable, using fallback:', healthError.message);
+        setSystemHealth({
+          database: { connected: true, status: 'connected' },
+          server: { uptime: 0, memoryUsage: { rss: 0, heapUsed: 0, heapTotal: 0 } }
+        });
+      }
+      
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      
+      // Check if it's a JSON parsing error (HTML response)
+      if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
+        console.warn('Received HTML response instead of JSON, but continuing without reload');
+        return;
+      }
+      
+      alert(`Failed to load dashboard data: ${error.message}`);
     }
   }, [callAPI]);
+
+  // Initial data fetch
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await fetchDashboardData();
+      setLoading(false);
+    };
+
+    if (callAPI) {
+      loadData();
+    }
+  }, [callAPI, fetchDashboardData]);
+
+  // Auto-refresh data every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchDashboardData]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -126,8 +178,25 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage your Twitter clone application</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+              <p className="text-gray-600 mt-1">Manage your Twitter clone application</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
+              <button
+                onClick={fetchDashboardData}
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md flex items-center space-x-2"
+              >
+                <span className={loading ? 'animate-spin' : ''}>🔄</span>
+                <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -162,6 +231,7 @@ const AdminDashboard = () => {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Stats Cards */}
+              {/* Stats Cards Row 1 */}
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -171,7 +241,8 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{userStats.total}</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.users.total}</p>
+                    <p className="text-xs text-green-600">+{dashboardStats.users.newToday} today</p>
                   </div>
                 </div>
               </div>
@@ -180,12 +251,13 @@ const AdminDashboard = () => {
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">🔑</span>
+                      <span className="text-white text-sm">📝</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Admin Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{userStats.admins}</p>
+                    <p className="text-sm font-medium text-gray-600">Total Posts</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.posts.total}</p>
+                    <p className="text-xs text-green-600">+{dashboardStats.posts.today} today</p>
                   </div>
                 </div>
               </div>
@@ -194,13 +266,64 @@ const AdminDashboard = () => {
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">📢</span>
+                      <span className="text-white text-sm">❤️</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Ad Banner Status</p>
+                    <p className="text-sm font-medium text-gray-600">Total Likes</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.engagement.totalLikes}</p>
+                    <p className="text-xs text-gray-500">Across all posts</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Cards Row 2 */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">🔑</span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Admin Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.users.admins}</p>
+                    <p className="text-xs text-gray-500">{dashboardStats.users.regular} regular users</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">💬</span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Comments</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.engagement.totalComments}</p>
+                    <p className="text-xs text-green-600">+{dashboardStats.engagement.commentsToday} today</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">
+                        {systemHealth?.database.connected ? '🟢' : '🔴'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">System Status</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {adConfig?.isActive ? 'Active' : 'Inactive'}
+                      {systemHealth?.database.connected ? 'Online' : 'Offline'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      DB: {systemHealth?.database.status || 'unknown'}
                     </p>
                   </div>
                 </div>

@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import adBannerRoutes from "./routes/adBanner.route.js";
 import debugRoutes from "./routes/debug.route.js";
+import adminRoutes from "./routes/admin.route.js";
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ad-banner", adBannerRoutes);
 app.use("/api/debug", debugRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
