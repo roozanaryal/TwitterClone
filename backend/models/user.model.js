@@ -64,6 +64,10 @@ const userSchema = new mongoose.Schema({
       default: [],
     },
   ],
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Indexes for efficient queries

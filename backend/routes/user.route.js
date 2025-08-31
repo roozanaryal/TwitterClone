@@ -1,5 +1,6 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { adminOnly } from "../middleware/adminMiddleware.js";
 import {
   updateProfile,
   updateBio,
@@ -12,6 +13,7 @@ import {
   searchUsers,
   getUserFollowers,
   getUserFollowing,
+  getAllUsers,
 } from "../controller/user.controller.js";
 import { searchResult } from "../controller/search.controller.js";
 const router = express.Router();
@@ -29,5 +31,6 @@ router.get("/:userId/following", authMiddleware, getUserFollowing);
 router.post("/follow/:id", authMiddleware, followUser);
 router.post("/unfollow/:id", authMiddleware, unfollowUser);
 router.post("/search", authMiddleware, searchResult);
+router.get("/all", authMiddleware, adminOnly, getAllUsers);
 
 export default router;

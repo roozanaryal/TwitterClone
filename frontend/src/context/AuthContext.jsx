@@ -44,6 +44,9 @@ export const AuthContextProvider = ({ children }) => {
         });
         if (res.ok) {
           const user = await res.json();
+          console.log("AuthContext - /me response:", user);
+          console.log("AuthContext - user isAdmin:", user.isAdmin);
+          
           // Ensure token is included in the user object
           if (user && !user.token) {
             // If no token in response, try to get from localStorage
@@ -53,6 +56,16 @@ export const AuthContextProvider = ({ children }) => {
             }
           }
           setAuthUser(user);
+          
+          // Auto-redirect based on user role and current path
+          const currentPath = window.location.pathname;
+          if (user.isAdmin && currentPath === "/") {
+            console.log("AuthContext - Redirecting admin from home to admin dashboard");
+            window.location.href = "/admin";
+          } else if (!user.isAdmin && currentPath === "/admin") {
+            console.log("AuthContext - Redirecting regular user from admin to home");
+            window.location.href = "/";
+          }
         } else {
           setAuthUser(null);
         }

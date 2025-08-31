@@ -4,8 +4,20 @@ import Spinner from "./Spinner";
 
 const ProtectedRoute = ({ children }) => {
   const { authUser, authLoading } = useAuthContext();
+  
   if (authLoading) return <Spinner />;
-  return authUser ? children : <Navigate to="/login" replace />;
+  
+  if (!authUser) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // If admin user tries to access regular routes, redirect to admin dashboard
+  if (authUser.isAdmin) {
+    console.log("ProtectedRoute - Admin user accessing regular route, redirecting to /admin");
+    return <Navigate to="/admin" replace />;
+  }
+  
+  return children;
 };
 
 export default ProtectedRoute;

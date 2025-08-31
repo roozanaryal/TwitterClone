@@ -20,11 +20,12 @@ const Login = () => {
     setError("");
     try {
       if (isLogin) {
+        // Login hook now handles navigation based on user role
         await login(username, password);
       } else {
         await signup({ name, username, password, email });
+        navigate("/"); // Regular users go to home after signup
       }
-      navigate("/"); // Redirect to home on success
     } catch (err) {
       setError(err.message || "Something went wrong");
     }

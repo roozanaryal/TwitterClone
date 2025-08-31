@@ -399,3 +399,24 @@ export const getUserFollowing = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Get all users (Admin only)
+export const getAllUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+    
+    // Get all users except the current admin user
+    const users = await User.find({ _id: { $ne: currentUserId } })
+      .select('-password')
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      users,
+      total: users.length
+    });
+  } catch (error) {
+    console.error("Error in getAllUsers: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

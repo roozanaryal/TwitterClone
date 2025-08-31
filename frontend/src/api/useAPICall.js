@@ -7,7 +7,7 @@ export function useAPICall() {
   const { authUser } = useAuthContext();
 
   const callAPI = useCallback(async (urlPath, methodType, body, options = {}) => {
-    const { skipAuth = false } = options;
+    const { skipAuth = false, retryCount = 0 } = options;
     
     // For non-auth routes, we still check if user is logged in (except for login/signup)
     if (!skipAuth && !authUser) {
@@ -29,9 +29,17 @@ export function useAPICall() {
         body: body ? JSON.stringify(body) : undefined,
         credentials: "include", // This sends the httpOnly cookie
       });
+      
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
+        
+        // If we get HTML response and haven't retried yet, try again
+        if (text.includes("<!doctype") && retryCount < 2) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return callAPI(urlPath, methodType, body, { ...options, retryCount: retryCount + 1 });
+        }
+        
         throw new Error(
           `Server returned non-JSON response: ${text.slice(0, 100)}`
         );
@@ -43,6 +51,13 @@ export function useAPICall() {
       return data;
     } catch (error) {
       console.error("API call error:", error);
+      
+      // If it's a network error and we haven't retried yet, try again
+      if ((error.name === 'TypeError' || error.message.includes('fetch')) && retryCount < 2) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return callAPI(urlPath, methodType, body, { ...options, retryCount: retryCount + 1 });
+      }
+      
       throw error;
     }
   }, [authUser]);

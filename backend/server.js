@@ -9,6 +9,8 @@ import tweetRoutes from "./routes/tweet.route.js";
 import bookmarkRoutes from "./routes/bookMark.route.js";
 import userRoutes from "./routes/user.route.js";
 import notificationRoutes from "./routes/notification.route.js";
+import adBannerRoutes from "./routes/adBanner.route.js";
+import debugRoutes from "./routes/debug.route.js";
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +36,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/tweets", tweetRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/ad-banner", adBannerRoutes);
+app.use("/api/debug", debugRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

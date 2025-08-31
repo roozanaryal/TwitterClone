@@ -8,6 +8,8 @@ import PublicRoute from "./PublicRoute";
 // import Tweet from "./Tweet";
 import Bookmark from "./Bookmark";
 import BookmarkComponent from "./BookmarkComponent";
+import AdminDashboard from "./AdminDashboard";
+import AdminRoute from "./AdminRoute";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -45,6 +47,14 @@ const Body = () => {
         <PublicRoute>
           <Login />
         </PublicRoute>
+      ),
+    },
+    {
+      path: "/admin",
+      element: (
+        <AdminRoute>
+          <AdminDashboard />
+        </AdminRoute>
       ),
     },
   ]);

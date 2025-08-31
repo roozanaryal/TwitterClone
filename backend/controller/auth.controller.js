@@ -76,6 +76,12 @@ export const login = async (req, res) => {
         message: "Invalid username or password",
       });
     }
+    
+    console.log("Found user:", {
+      username: user.username,
+      isAdmin: user.isAdmin,
+      hasIsAdminField: user.hasOwnProperty('isAdmin')
+    });
 
     const isPasswordCorrect = await bcrypt.compare(password, user?.password);
     if (!isPasswordCorrect) {
@@ -83,7 +89,11 @@ export const login = async (req, res) => {
         message: "Invalid username or password",
       });
     }
-    console.log(user);
+    console.log("User logging in:", {
+      id: user._id,
+      username: user.username,
+      isAdmin: user.isAdmin
+    });
 
     const token = generateToken(user._id);
     res.cookie("token", token, {
@@ -97,6 +107,7 @@ export const login = async (req, res) => {
       name: user.name,
       username: user.username,
       profilePicture: user.profilePicture,
+      isAdmin: user.isAdmin,
       token: token, // Include token in response
     });
   } catch (error) {
