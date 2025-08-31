@@ -44,10 +44,7 @@ const AdminDashboard = () => {
         
         // Check if it's a JSON parsing error (HTML response)
         if (error.message.includes('Unexpected token') || error.message.includes('<!doctype')) {
-          // Retry after a longer delay
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+          console.warn('Received HTML response instead of JSON, but continuing without reload');
           return;
         }
         
