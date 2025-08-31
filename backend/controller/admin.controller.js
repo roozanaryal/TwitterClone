@@ -47,12 +47,12 @@ export const getDashboardStats = async (req, res) => {
 
     // Engagement statistics
     const totalLikes = await Post.aggregate([
-      { $project: { likesCount: { $size: "$likes" } } },
+      { $project: { likesCount: { $size: { $ifNull: ["$likes", []] } } } },
       { $group: { _id: null, total: { $sum: "$likesCount" } } }
     ]);
 
     const totalBookmarks = await Post.aggregate([
-      { $project: { bookmarksCount: { $size: "$bookmarks" } } },
+      { $project: { bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } } } },
       { $group: { _id: null, total: { $sum: "$bookmarksCount" } } }
     ]);
 
@@ -211,10 +211,10 @@ export const getUserAnalytics = async (req, res) => {
         $project: {
           username: 1,
           name: 1,
-          followersCount: { $size: "$followers" },
-          followingCount: { $size: "$following" },
-          postsCount: { $size: "$posts" },
-          bookmarksCount: { $size: "$bookmarks" }
+          followersCount: { $size: { $ifNull: ["$followers", []] } },
+          followingCount: { $size: { $ifNull: ["$following", []] } },
+          postsCount: { $size: { $ifNull: ["$posts", []] } },
+          bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } }
         }
       },
       {
@@ -252,7 +252,7 @@ export const getContentStats = async (req, res) => {
     const postLengthDistribution = await Post.aggregate([
       {
         $project: {
-          length: { $strLenCP: "$description" },
+          length: { $strLenCP: { $ifNull: ["$description", ""] } },
           createdAt: 1
         }
       },
@@ -275,8 +275,8 @@ export const getContentStats = async (req, res) => {
         $project: {
           description: 1,
           postOwner: 1,
-          likesCount: { $size: "$likes" },
-          commentsCount: { $size: "$comments" },
+          likesCount: { $size: { $ifNull: ["$likes", []] } },
+          commentsCount: { $size: { $ifNull: ["$comments", []] } },
           createdAt: 1
         }
       },
