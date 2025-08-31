@@ -420,3 +420,72 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Toggle a user's admin status (Admin only)
+export const toggleAdminStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user._id.toString();
+
+    // Prevent modifying your own admin status
+    if (id === currentUserId) {
+      return res.status(400).json({ error: "You cannot change your own admin status" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.isAdmin = !user.isAdmin;
+    await user.save();
+
+    const sanitized = user.toObject();
+    delete sanitized.password;
+
+    res.status(200).json({
+      success: true,
+      message: `User ${user.username} is now ${user.isAdmin ? 'an admin' : 'a regular user'}`,
+      user: sanitized,
+    });
+  } catch (error) {
+    console.error("Error in toggleAdminStatus:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Delete a user (Admin only)
+export const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user._id.toString();
+
+    // Prevent deleting yourself
+    if (id === currentUserId) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Delete user's posts
+    await Post.deleteMany({ postOwner: user._id });
+
+    // Delete notifications related to this user (as sender or receiver)
+    await Notification.deleteMany({ $or: [{ user: user._id }, { fromUser: user._id }] });
+
+    // Remove the user document
+    await User.findByIdAndDelete(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: `User ${user.username} deleted successfully`,
+      deletedUserId: id,
+    });
+  } catch (error) {
+    console.error("Error in deleteUserById:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

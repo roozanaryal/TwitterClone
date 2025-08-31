@@ -7,6 +7,10 @@ import {
   getUserAnalytics,
   getContentStats
 } from "../controller/admin.controller.js";
+import {
+  toggleAdminStatus,
+  deleteUserById,
+} from "../controller/user.controller.js";
 
 const router = express.Router();
 
@@ -25,5 +29,9 @@ router.get("/analytics/users", getUserAnalytics);
 
 // Content statistics
 router.get("/analytics/content", getContentStats);
+
+// User management actions
+router.patch("/users/:id/toggle-admin", toggleAdminStatus);
+router.delete("/users/:id", deleteUserById);
 
 export default router;

@@ -19,6 +19,8 @@ const AdminDashboard = () => {
   });
   const [systemHealth, setSystemHealth] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [deleteLoadingId, setDeleteLoadingId] = useState(null);
 
   const callAPI = useAPICall();
 
@@ -165,6 +167,66 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleToggleAdmin = async (user) => {
+    if (!user || !user._id) return;
+    setActionLoadingId(user._id);
+    try {
+      const data = await callAPI(`admin/users/${user._id}/toggle-admin`, 'PATCH');
+      const updated = data.user;
+      // Update users list
+      setUsers(prev => prev.map(u => u._id === updated._id ? { ...u, isAdmin: updated.isAdmin } : u));
+      // Update dashboard admin/regular counts
+      setDashboardStats(prev => {
+        const wasAdmin = !!user.isAdmin;
+        const nowAdmin = !!updated.isAdmin;
+        if (wasAdmin === nowAdmin) return prev;
+        const deltaAdmins = nowAdmin ? 1 : -1;
+        return {
+          ...prev,
+          users: {
+            ...prev.users,
+            admins: prev.users.admins + deltaAdmins,
+            regular: prev.users.regular - deltaAdmins,
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Failed to toggle admin:', error);
+      alert(error.message || 'Failed to toggle admin status');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDeleteUser = async (user) => {
+    if (!user || !user._id) return;
+    if (!confirm(`Delete user @${user.username}? This cannot be undone.`)) return;
+    setDeleteLoadingId(user._id);
+    try {
+      await callAPI(`admin/users/${user._id}`, 'DELETE');
+      // Remove from users list
+      setUsers(prev => prev.filter(u => u._id !== user._id));
+      // Update totals
+      setDashboardStats(prev => {
+        const wasAdmin = !!user.isAdmin;
+        return {
+          ...prev,
+          users: {
+            ...prev.users,
+            total: Math.max(0, (prev.users.total || 0) - 1),
+            admins: wasAdmin ? Math.max(0, (prev.users.admins || 0) - 1) : prev.users.admins,
+            regular: !wasAdmin ? Math.max(0, (prev.users.regular || 0) - 1) : prev.users.regular,
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert(error.message || 'Failed to delete user');
+    } finally {
+      setDeleteLoadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -247,35 +309,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">📝</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Posts</p>
-                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.posts.total}</p>
-                    <p className="text-xs text-green-600">+{dashboardStats.posts.today} today</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">❤️</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Likes</p>
-                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.engagement.totalLikes}</p>
-                    <p className="text-xs text-gray-500">Across all posts</p>
-                  </div>
-                </div>
-              </div>
 
               {/* Stats Cards Row 2 */}
               <div className="bg-white rounded-lg shadow p-6">
@@ -293,20 +326,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">💬</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Comments</p>
-                    <p className="text-2xl font-bold text-gray-900">{dashboardStats.engagement.totalComments}</p>
-                    <p className="text-xs text-green-600">+{dashboardStats.engagement.commentsToday} today</p>
-                  </div>
-                </div>
-              </div>
 
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
@@ -397,6 +416,9 @@ const AdminDashboard = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Joined
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -445,6 +467,24 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {formatDate(user.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleToggleAdmin(user)}
+                              disabled={actionLoadingId === user._id}
+                              className={`px-3 py-1 rounded-md text-white ${user.isAdmin ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-blue-600 hover:bg-blue-700'} disabled:opacity-50`}
+                            >
+                              {actionLoadingId === user._id ? '...' : user.isAdmin ? 'Demote' : 'Promote'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              disabled={deleteLoadingId === user._id}
+                              className="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+                            >
+                              {deleteLoadingId === user._id ? 'Deleting...' : 'Delete'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
