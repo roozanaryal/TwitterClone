@@ -1,14 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getAdBanner, updateAdBanner, resetAdBanner } from '../api/adBanner.api.js';
 import useAPICall from '../api/useAPICall.js';
+import AdBannerManager from './AdBannerManager.jsx';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [adConfig, setAdConfig] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({});
   const [dashboardStats, setDashboardStats] = useState({
     users: { total: 0, admins: 0, regular: 0, newToday: 0, newThisWeek: 0, newThisMonth: 0 },
     posts: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
@@ -102,10 +99,7 @@ const AdminDashboard = () => {
         setUsers([]);
       }
       
-      // Fetch ad banner config
-      const adData = await getAdBanner();
-      setAdConfig(adData);
-      setFormData(adData);
+      // Ad banner config is now handled by AdBannerManager component
       
       // Removed system health fetch and UI per user request
       
@@ -145,48 +139,7 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, [fetchDashboardData]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleAdBannerSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-
-    try {
-      const data = await updateAdBanner(formData);
-      setAdConfig(data.adBanner);
-      alert('Ad banner updated successfully!');
-    } catch (error) {
-      console.error('Failed to update ad banner:', error);
-      alert(error.message || 'Failed to update ad banner');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleAdBannerReset = async () => {
-    if (!confirm('Are you sure you want to reset the ad banner to default values?')) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const data = await resetAdBanner();
-      setAdConfig(data.adBanner);
-      setFormData(data.adBanner);
-      alert('Ad banner reset to default values!');
-    } catch (error) {
-      console.error('Failed to reset ad banner:', error);
-      alert(error.message || 'Failed to reset ad banner');
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Ad banner management is now handled by AdBannerManager component
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -587,195 +540,7 @@ const AdminDashboard = () => {
 
           {/* Ad Banner Control Tab */}
           {activeTab === 'ads' && (
-            <div className="space-y-6">
-              {/* Quick Toggle */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Ad Banner Status</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Control whether the ad banner is shown to users
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm text-gray-500">
-                      {formData.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        formData.isActive ? 'bg-blue-600' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          formData.isActive ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ad Banner Configuration */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-medium text-gray-900">Ad Banner Configuration</h3>
-                  <button
-                    onClick={handleAdBannerReset}
-                    disabled={saving}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md disabled:opacity-50"
-                  >
-                    Reset to Default
-                  </button>
-                </div>
-
-                <form onSubmit={handleAdBannerSubmit} className="space-y-6">
-                  {/* Basic Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                        Title
-                      </label>
-                      <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value={formData.title || ''}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700 mb-2">
-                        Subtitle
-                      </label>
-                      <input
-                        type="text"
-                        id="subtitle"
-                        name="subtitle"
-                        value={formData.subtitle || ''}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                        Price
-                      </label>
-                      <input
-                        type="text"
-                        id="price"
-                        name="price"
-                        value={formData.price || ''}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="ctaText" className="block text-sm font-medium text-gray-700 mb-2">
-                        CTA Button Text
-                      </label>
-                      <input
-                        type="text"
-                        id="ctaText"
-                        name="ctaText"
-                        value={formData.ctaText || ''}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      rows="3"
-                      value={formData.description || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Timing Controls */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="showDelay" className="block text-sm font-medium text-gray-700 mb-2">
-                        Show Delay (seconds)
-                      </label>
-                      <input
-                        type="number"
-                        id="showDelay"
-                        name="showDelay"
-                        min="1"
-                        max="300"
-                        value={formData.showDelay || 20}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="closeDelay" className="block text-sm font-medium text-gray-700 mb-2">
-                        Close Button Delay (seconds)
-                      </label>
-                      <input
-                        type="number"
-                        id="closeDelay"
-                        name="closeDelay"
-                        min="1"
-                        max="60"
-                        value={formData.closeDelay || 5}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Preview */}
-              {adConfig && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Preview</h3>
-                  <div className={`bg-gradient-to-r ${adConfig.backgroundColor} text-${adConfig.textColor} p-4 rounded-lg`}>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                        <span className="text-red-600 font-bold text-xs">{adConfig.logoText}</span>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-lg">{adConfig.title}</h4>
-                        <p className="text-sm">{adConfig.subtitle}</p>
-                        <p className="text-xs opacity-90">{adConfig.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="bg-white text-red-600 px-2 py-1 rounded text-xs font-semibold">
-                          {adConfig.price}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <AdBannerManager />
           )}
         </div>
       </div>
