@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import useAPICall from '../api/useAPICall.js';
 import AdBannerManager from './AdBannerManager.jsx';
+import { useAuthContext } from '../context/AuthContext.jsx';
+import useLogout from '../hooks/useLogout.js';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { authUser } = useAuthContext();
+  const { logout } = useLogout();
   const [dashboardStats, setDashboardStats] = useState({
     users: { total: 0, admins: 0, regular: 0, newToday: 0, newThisWeek: 0, newThisMonth: 0 },
     posts: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
@@ -233,6 +237,9 @@ const AdminDashboard = () => {
               <div className="text-sm text-gray-500">
                 Last updated: {lastRefresh.toLocaleTimeString()}
               </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <span>Welcome, {authUser?.name || authUser?.username || 'Admin'}</span>
+              </div>
               <button
                 onClick={fetchDashboardData}
                 disabled={loading}
@@ -240,6 +247,13 @@ const AdminDashboard = () => {
               >
                 <span className={loading ? 'animate-spin' : ''}>🔄</span>
                 <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+              <button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center space-x-2"
+              >
+                <span>🚪</span>
+                <span>Logout</span>
               </button>
             </div>
           </div>
