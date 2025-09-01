@@ -14,25 +14,18 @@ const AdBanner = ({ onClose }) => {
   useEffect(() => {
     const fetchAdConfig = async () => {
       try {
-        const response = await fetch('/api/ad-banner');
+        const response = await fetch('/api/ad-banner?increment=true');
         const data = await response.json();
-        setAdConfig(data);
+        
+        // Only set config if ad should be shown
+        if (data.shouldShow) {
+          setAdConfig(data);
+        } else {
+          setAdConfig(null);
+        }
       } catch (error) {
         console.error('Failed to fetch ad banner config:', error);
-        // Use default config if API fails
-        setAdConfig({
-          isActive: true,
-          title: "🚗 Toyota Camry 2024",
-          subtitle: "Experience Luxury & Performance",
-          description: "Limited Time Offer: 0% Financing Available",
-          price: "Starting at $25,000",
-          imageUrl: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=200&h=120&fit=crop&crop=center",
-          logoText: "TOYOTA",
-          ctaText: "Learn More",
-          backgroundColor: "from-red-600 to-red-800",
-          showDelay: 20,
-          closeDelay: 5
-        });
+        setAdConfig(null);
       }
     };
 
@@ -55,7 +48,7 @@ const AdBanner = ({ onClose }) => {
     }
 
     // Only start timer if user is authenticated and not loading
-    if (!adConfig || !adConfig.isActive || authLoading) return;
+    if (!adConfig || !adConfig.shouldShow || authLoading) return;
 
     const timer = setInterval(() => {
       timeElapsedRef.current += 1;
@@ -76,6 +69,29 @@ const AdBanner = ({ onClose }) => {
     if (canClose) {
       setIsVisible(false);
       onClose?.();
+    }
+  };
+
+  const handleCtaClick = async () => {
+    try {
+      // Track click analytics
+      await fetch('/api/ad-banner/click', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Open URL if provided
+      if (adConfig.ctaUrl && adConfig.ctaUrl !== '#') {
+        window.open(adConfig.ctaUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to track ad click:', error);
+      // Still open URL even if tracking fails
+      if (adConfig.ctaUrl && adConfig.ctaUrl !== '#') {
+        window.open(adConfig.ctaUrl, '_blank');
+      }
     }
   };
 
@@ -121,7 +137,7 @@ const AdBanner = ({ onClose }) => {
         {/* CTA Button */}
         <div className="flex items-center space-x-4">
           <button 
-            onClick={() => adConfig.ctaUrl && adConfig.ctaUrl !== '#' && window.open(adConfig.ctaUrl, '_blank')}
+            onClick={handleCtaClick}
             className="bg-white text-red-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors"
           >
             {adConfig.ctaText}

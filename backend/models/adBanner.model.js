@@ -52,6 +52,51 @@ const adBannerSchema = new mongoose.Schema({
   closeDelay: {
     type: Number,
     default: 5 // seconds
+  },
+  // New dynamic fields
+  category: {
+    type: String,
+    enum: ['automotive', 'technology', 'fashion', 'food', 'travel', 'finance', 'health', 'education', 'entertainment', 'other'],
+    default: 'automotive'
+  },
+  targetAudience: {
+    type: String,
+    enum: ['all', 'new_users', 'active_users', 'premium_users'],
+    default: 'all'
+  },
+  priority: {
+    type: Number,
+    min: 1,
+    max: 10,
+    default: 5
+  },
+  startDate: {
+    type: Date,
+    default: Date.now
+  },
+  endDate: {
+    type: Date,
+    default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+  },
+  impressions: {
+    type: Number,
+    default: 0
+  },
+  clicks: {
+    type: Number,
+    default: 0
+  },
+  maxImpressions: {
+    type: Number,
+    default: 10000
+  },
+  isScheduled: {
+    type: Boolean,
+    default: false
+  },
+  adminNotes: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true

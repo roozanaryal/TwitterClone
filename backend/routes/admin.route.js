@@ -11,6 +11,14 @@ import {
   toggleAdminStatus,
   deleteUserById,
 } from "../controller/user.controller.js";
+import {
+  getAdBanner,
+  updateAdBanner,
+  resetAdBanner,
+  trackAdClick,
+  getAdAnalytics,
+  toggleAdStatus
+} from "../controller/adBanner.controller.js";
 
 const router = express.Router();
 
@@ -33,5 +41,12 @@ router.get("/analytics/content", getContentStats);
 // User management actions
 router.patch("/users/:id/toggle-admin", toggleAdminStatus);
 router.delete("/users/:id", deleteUserById);
+
+// Ad Banner management
+router.get("/ad-banner", getAdBanner);
+router.put("/ad-banner", updateAdBanner);
+router.post("/ad-banner/reset", resetAdBanner);
+router.get("/ad-banner/analytics", getAdAnalytics);
+router.patch("/ad-banner/toggle", toggleAdStatus);
 
 export default router;
