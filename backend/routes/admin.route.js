@@ -5,7 +5,8 @@ import {
   getDashboardStats,
   getSystemHealth,
   getUserAnalytics,
-  getContentStats
+  getContentStats,
+  toggleUserAds
 } from "../controller/admin.controller.js";
 import {
   toggleAdminStatus,
@@ -40,6 +41,7 @@ router.get("/analytics/content", getContentStats);
 
 // User management actions
 router.patch("/users/:id/toggle-admin", toggleAdminStatus);
+router.patch("/users/:id/toggle-ads", toggleUserAds);
 router.delete("/users/:id", deleteUserById);
 
 // Ad Banner management

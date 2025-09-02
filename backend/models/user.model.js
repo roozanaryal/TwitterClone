@@ -68,7 +68,17 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  showAds: {
+    type: Boolean,
+    default: true,
+  },
 });
+
+// Method to compare password
+userSchema.methods.matchPassword = async function(enteredPassword) {
+  const bcrypt = await import('bcryptjs');
+  return await bcrypt.default.compare(enteredPassword, this.password);
+};
 
 // Indexes for efficient queries
 userSchema.index({ followers: 1 });

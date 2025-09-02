@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [deleteLoadingId, setDeleteLoadingId] = useState(null);
+  const [adToggleLoadingId, setAdToggleLoadingId] = useState(null);
   // UI/UX: pagination and debounced search
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -212,6 +213,22 @@ const AdminDashboard = () => {
       alert(error.message || 'Failed to delete user');
     } finally {
       setDeleteLoadingId(null);
+    }
+  };
+
+  const handleToggleUserAds = async (user) => {
+    if (!user || !user._id) return;
+    setAdToggleLoadingId(user._id);
+    try {
+      const data = await callAPI(`admin/users/${user._id}/toggle-ads`, 'PATCH');
+      const updatedUser = data.user;
+      // Update users list
+      setUsers(prev => prev.map(u => u._id === updatedUser._id ? { ...u, showAds: updatedUser.showAds } : u));
+    } catch (error) {
+      console.error('Failed to toggle ads:', error);
+      alert(error.message || 'Failed to toggle ad settings');
+    } finally {
+      setAdToggleLoadingId(null);
     }
   };
 
@@ -432,6 +449,9 @@ const AdminDashboard = () => {
                         Role
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ad Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Followers
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -482,6 +502,28 @@ const AdminDashboard = () => {
                           }`}>
                             {user.isAdmin ? 'Admin' : 'User'}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.showAds !== false
+                                ? 'bg-blue-100 text-blue-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {user.showAds !== false ? 'Ads Enabled' : 'Ads Disabled'}
+                            </span>
+                            <button
+                              onClick={() => handleToggleUserAds(user)}
+                              disabled={adToggleLoadingId === user._id}
+                              className={`px-2 py-1 rounded-md text-xs ${
+                                user.showAds !== false
+                                  ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                  : 'bg-green-600 hover:bg-green-700 text-white'
+                              } disabled:opacity-50 shadow-sm`}
+                            >
+                              {adToggleLoadingId === user._id ? '...' : (user.showAds !== false ? 'Disable' : 'Enable')}
+                            </button>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {user.followers?.length || 0}

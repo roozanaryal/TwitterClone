@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { RxCross2 } from 'react-icons/rx';
-import { useAuthContext } from '../context/AuthContext';
+import { useState, useEffect, useRef } from "react";
+import { RxCross2 } from "react-icons/rx";
+import { useAuthContext } from "../context/AuthContext";
+import useAPICall from "../api/useAPICall";
 
 const AdBanner = ({ onClose }) => {
   const { authUser, authLoading } = useAuthContext();
+  const callAPI = useAPICall();
   const [isVisible, setIsVisible] = useState(false);
   const [canClose, setCanClose] = useState(false);
   const [adStartTime, setAdStartTime] = useState(null);
@@ -14,9 +16,8 @@ const AdBanner = ({ onClose }) => {
   useEffect(() => {
     const fetchAdConfig = async () => {
       try {
-        const response = await fetch('/api/ad-banner?increment=true');
-        const data = await response.json();
-        
+        const data = await callAPI("ad-banner?increment=true", "GET", null, { skipAuth: true });
+
         // Only set config if ad should be shown
         if (data.shouldShow) {
           setAdConfig(data);
@@ -24,13 +25,13 @@ const AdBanner = ({ onClose }) => {
           setAdConfig(null);
         }
       } catch (error) {
-        console.error('Failed to fetch ad banner config:', error);
+        console.error("Failed to fetch ad banner config:", error);
         setAdConfig(null);
       }
     };
 
     fetchAdConfig();
-  }, []);
+  }, [callAPI]);
 
   useEffect(() => {
     // Reset timer and banner state when user logs out
@@ -42,8 +43,8 @@ const AdBanner = ({ onClose }) => {
       return;
     }
 
-    // Don't show ads to admin users
-    if (authUser.isAdmin) {
+    // Don't show ads to admin users or users with ads disabled
+    if (authUser.isAdmin || authUser.showAds === false) {
       return;
     }
 
@@ -75,22 +76,17 @@ const AdBanner = ({ onClose }) => {
   const handleCtaClick = async () => {
     try {
       // Track click analytics
-      await fetch('/api/ad-banner/click', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
+      await callAPI("ad-banner/click", "POST", null, { skipAuth: true });
+
       // Open URL if provided
-      if (adConfig.ctaUrl && adConfig.ctaUrl !== '#') {
-        window.open(adConfig.ctaUrl, '_blank');
+      if (adConfig.ctaUrl && adConfig.ctaUrl !== "#") {
+        window.open(adConfig.ctaUrl, "_blank");
       }
     } catch (error) {
-      console.error('Failed to track ad click:', error);
+      console.error("Failed to track ad click:", error);
       // Still open URL even if tracking fails
-      if (adConfig.ctaUrl && adConfig.ctaUrl !== '#') {
-        window.open(adConfig.ctaUrl, '_blank');
+      if (adConfig.ctaUrl && adConfig.ctaUrl !== "#") {
+        window.open(adConfig.ctaUrl, "_blank");
       }
     }
   };
@@ -98,13 +94,17 @@ const AdBanner = ({ onClose }) => {
   if (!isVisible || !adConfig) return null;
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 bg-gradient-to-r ${adConfig.backgroundColor} text-${adConfig.textColor} shadow-xl`}>
+    <div
+      className={`fixed top-0 left-0 right-0 z-50 bg-gradient-to-r ${adConfig.backgroundColor} text-${adConfig.textColor} shadow-xl`}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
         <div className="flex items-center space-x-6 flex-1">
           {/* Logo/Image Placeholder */}
           <div className="flex-shrink-0">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-              <span className="text-red-600 font-bold text-sm">{adConfig.logoText}</span>
+              <span className="text-red-600 font-bold text-sm">
+                {adConfig.logoText}
+              </span>
             </div>
           </div>
 
@@ -115,7 +115,8 @@ const AdBanner = ({ onClose }) => {
               alt={adConfig.title}
               className="w-48 h-28 object-cover rounded-lg shadow-lg"
               onError={(e) => {
-                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjOUI5QkE0IiBmb250LXNpemU9IjE0Ij5Qcm9kdWN0IEltYWdlPC90ZXh0Pgo8L3N2Zz4=';
+                e.target.src =
+                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjOUI5QkE0IiBmb250LXNpemU9IjE0Ij5Qcm9kdWN0IEltYWdlPC90ZXh0Pgo8L3N2Zz4=";
               }}
             />
           </div>
@@ -136,7 +137,7 @@ const AdBanner = ({ onClose }) => {
 
         {/* CTA Button */}
         <div className="flex items-center space-x-4">
-          <button 
+          <button
             onClick={handleCtaClick}
             className="bg-white text-red-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors"
           >
@@ -147,9 +148,9 @@ const AdBanner = ({ onClose }) => {
           <button
             onClick={handleClose}
             className={`p-2 rounded-full transition-colors ${
-              canClose 
-                ? 'hover:bg-red-700 cursor-pointer' 
-                : 'opacity-50 cursor-not-allowed'
+              canClose
+                ? "hover:bg-red-700 cursor-pointer"
+                : "opacity-50 cursor-not-allowed"
             }`}
             aria-label="Close banner"
             disabled={!canClose}
@@ -158,7 +159,13 @@ const AdBanner = ({ onClose }) => {
           </button>
           {!canClose && adStartTime && adConfig.closeDelay && (
             <span className="text-xs opacity-75 ml-2">
-              Wait {Math.max(0, adConfig.closeDelay - Math.floor((Date.now() - adStartTime) / 1000))}s
+              Wait{" "}
+              {Math.max(
+                0,
+                adConfig.closeDelay -
+                  Math.floor((Date.now() - adStartTime) / 1000)
+              )}
+              s
             </span>
           )}
         </div>

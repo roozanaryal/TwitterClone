@@ -125,8 +125,14 @@ export const logout = (req, res) => {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
-    res.status(200).json({ message: "Logged out successfully" });
+    res.status(200).json({ 
+      success: true,
+      message: "Logged out successfully" 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ 
+      success: false,
+      message: "Internal Server Error" 
+    });
   }
 };

@@ -318,3 +318,58 @@ export const getContentStats = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Toggle user ad visibility
+export const toggleUserAds = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+    
+    console.log("Toggle ads request for user ID:", userId);
+    
+    if (!userId) {
+      console.log("No user ID provided");
+      return res.status(400).json({ error: "User ID is required" });
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.log("Invalid user ID format:", userId);
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log("User not found for ID:", userId);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("Current user showAds value:", user.showAds);
+    
+    // Handle undefined showAds field (set default to true if undefined)
+    if (user.showAds === undefined) {
+      user.showAds = true;
+    }
+    
+    // Toggle the showAds field
+    user.showAds = !user.showAds;
+    await user.save();
+
+    console.log("Updated user showAds value:", user.showAds);
+
+    res.status(200).json({
+      success: true,
+      message: `Ads ${user.showAds ? 'enabled' : 'disabled'} for user @${user.username}`,
+      user: {
+        _id: user._id,
+        username: user.username,
+        name: user.name,
+        showAds: user.showAds
+      }
+    });
+  } catch (error) {
+    console.error("Error in toggleUserAds:", error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error.message 
+    });
+  }
+};
