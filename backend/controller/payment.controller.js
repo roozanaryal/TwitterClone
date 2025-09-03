@@ -10,8 +10,11 @@ export const verifyEsewaPayment = async (req, res) => {
   try {
     const { oid, amt, refId, userId } = req.body;
 
+    console.log('Payment verification request:', { oid, amt, refId, userId });
+    
     // Validate required fields
-    if (!oid || !amt || !refId || !userId) {
+    if (!oid || !amt || !userId) {
+      console.log('Missing required parameters:', { oid: !!oid, amt: !!amt, refId: !!refId, userId: !!userId });
       return res.status(400).json({
         success: false,
         message: "Missing required payment parameters"
@@ -20,6 +23,7 @@ export const verifyEsewaPayment = async (req, res) => {
 
     // Validate amount (should be 100 for ad removal)
     if (parseFloat(amt) !== 100) {
+      console.log('Invalid amount:', amt, 'Expected: 100');
       return res.status(400).json({
         success: false,
         message: "Invalid payment amount"

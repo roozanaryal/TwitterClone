@@ -8,14 +8,22 @@ const PaymentSimulator = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    // Extract payment data from URL parameters
-    const amt = searchParams.get('amt') || '100';
-    const pid = searchParams.get('pid') || 'test-transaction';
-    const scd = searchParams.get('scd') || 'EPAYTEST';
-    const su = searchParams.get('su') || '';
-    const fu = searchParams.get('fu') || '';
+    // Extract payment data from URL parameters - match eSewa v2 format
+    const amount = searchParams.get('amount') || '100';
+    const total_amount = searchParams.get('total_amount') || amount;
+    const transaction_uuid = searchParams.get('transaction_uuid') || 'test-transaction';
+    const product_code = searchParams.get('product_code') || 'EPAYTEST';
+    const success_url = searchParams.get('success_url') || '';
+    const failure_url = searchParams.get('failure_url') || '';
 
-    setPaymentData({ amt, pid, scd, su, fu });
+    setPaymentData({ 
+      amount, 
+      total_amount, 
+      transaction_uuid, 
+      product_code, 
+      success_url, 
+      failure_url 
+    });
   }, [searchParams]);
 
   const handlePaymentSuccess = () => {
@@ -23,10 +31,10 @@ const PaymentSimulator = () => {
     
     // Simulate payment processing delay
     setTimeout(() => {
-      const successUrl = new URL(paymentData.su);
-      successUrl.searchParams.set('oid', paymentData.pid);
-      successUrl.searchParams.set('amt', paymentData.amt);
-      successUrl.searchParams.set('refId', `esewa-${Date.now()}`);
+      const successUrl = new URL(paymentData.success_url);
+      successUrl.searchParams.set('oid', paymentData.transaction_uuid);
+      successUrl.searchParams.set('amt', paymentData.total_amount);
+      successUrl.searchParams.set('refId', `simulator-${Date.now()}`);
       
       window.location.href = successUrl.toString();
     }, 2000);
@@ -36,9 +44,9 @@ const PaymentSimulator = () => {
     setIsProcessing(true);
     
     setTimeout(() => {
-      const failureUrl = new URL(paymentData.fu);
-      failureUrl.searchParams.set('oid', paymentData.pid);
-      failureUrl.searchParams.set('amt', paymentData.amt);
+      const failureUrl = new URL(paymentData.failure_url);
+      failureUrl.searchParams.set('oid', paymentData.transaction_uuid);
+      failureUrl.searchParams.set('amt', paymentData.total_amount);
       
       window.location.href = failureUrl.toString();
     }, 1000);
@@ -70,15 +78,15 @@ const PaymentSimulator = () => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Amount:</span>
-              <span className="font-semibold">₹{paymentData.amt}</span>
+              <span className="font-semibold">₹{paymentData.total_amount}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Transaction ID:</span>
-              <span className="font-mono text-xs">{paymentData.pid}</span>
+              <span className="font-mono text-xs">{paymentData.transaction_uuid}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Merchant Code:</span>
-              <span className="font-mono text-xs">{paymentData.scd}</span>
+              <span className="font-mono text-xs">{paymentData.product_code}</span>
             </div>
           </div>
         </div>

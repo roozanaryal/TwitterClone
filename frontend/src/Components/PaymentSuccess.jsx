@@ -23,9 +23,18 @@ const PaymentSuccess = () => {
         // Check for alternative parameter names
         const transactionId = oid || searchParams.get('pid');
         const amount = amt || searchParams.get('tAmt') || '100';
-        const referenceId = refId || searchParams.get('rid');
+        const referenceId = refId || searchParams.get('rid') || 'simulator-ref-' + Date.now();
+
+        console.log('Payment verification parameters:', {
+          oid: transactionId,
+          amt: amount,
+          refId: referenceId,
+          userId: authUser._id,
+          allParams: Object.fromEntries(searchParams.entries())
+        });
 
         if (!transactionId) {
+          console.error('No transaction ID found');
           setVerificationStatus('invalid');
           setIsVerifying(false);
           return;
@@ -35,9 +44,11 @@ const PaymentSuccess = () => {
         const response = await callAPI('payment/verify-esewa', 'POST', {
           oid: transactionId,
           amt: amount,
-          refId: referenceId || 'test-ref-' + Date.now(),
+          refId: referenceId,
           userId: authUser._id
         });
+
+        console.log('Payment verification response:', response);
 
         if (response.success) {
           // Update user's ad-free status with complete user data from backend
