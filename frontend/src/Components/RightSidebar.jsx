@@ -58,13 +58,14 @@ const UserCard = ({ user }) => {
 };
 
 UserCard.propTypes = {
-   user: {
+   user: PropTypes.shape({
       _id: PropTypes.string.isRequired,
       fullName: PropTypes.string,
+      name: PropTypes.string,
       username: PropTypes.string.isRequired,
       profilePicture: PropTypes.string,
       isFollowing: PropTypes.bool
-   }
+   }).isRequired
 };
 
 const RightSidebar = () => {

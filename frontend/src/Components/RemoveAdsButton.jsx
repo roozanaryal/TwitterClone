@@ -32,8 +32,8 @@ const RemoveAdsButton = () => {
         tAmt: 100, // total_amount
         pid: transactionUuid, // product_id/transaction_uuid
         scd: "EPAYTEST", // merchant_code for test environment
-        su: `${window.location.origin}/payment/success?oid=${transactionUuid}`, // success_url
-        fu: `${window.location.origin}/payment/failure?oid=${transactionUuid}`, // failure_url
+        su: `${window.location.origin}/payment/success?oid=${transactionUuid}&amt=100`, // success_url
+        fu: `${window.location.origin}/payment/failure?oid=${transactionUuid}&amt=100`, // failure_url
       };
 
       // Create form and submit to eSewa test environment
