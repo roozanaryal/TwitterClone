@@ -22,7 +22,14 @@ const PaymentSuccess = () => {
         // For eSewa test environment, these parameters might be different
         // Check for alternative parameter names
         const transactionId = oid || searchParams.get('pid');
-        const amount = amt || searchParams.get('tAmt') || '100';
+        
+        // Clean the amount parameter - remove any extra URL data
+        let cleanAmount = amt || searchParams.get('tAmt') || '100';
+        if (cleanAmount.includes('?')) {
+          cleanAmount = cleanAmount.split('?')[0];
+        }
+        const amount = cleanAmount;
+        
         const referenceId = refId || searchParams.get('rid') || 'simulator-ref-' + Date.now();
 
         console.log('Payment verification parameters:', {
@@ -44,8 +51,7 @@ const PaymentSuccess = () => {
         const response = await callAPI('payment/verify-esewa', 'POST', {
           oid: transactionId,
           amt: amount,
-          refId: referenceId,
-          userId: authUser._id
+          refId: referenceId
         });
 
         console.log('Payment verification response:', response);

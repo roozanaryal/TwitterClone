@@ -8,7 +8,11 @@ const ESEWA_MERCHANT_CODE = "EPAYTEST"; // Test merchant code
 // Verify eSewa payment
 export const verifyEsewaPayment = async (req, res) => {
   try {
-    const { oid, amt, refId, userId } = req.body;
+    console.log('Full request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
+    const { oid, amt, refId } = req.body;
+    const userId = req.user.id; // Get userId from authenticated user
 
     console.log('Payment verification request:', { oid, amt, refId, userId });
     
@@ -21,9 +25,15 @@ export const verifyEsewaPayment = async (req, res) => {
       });
     }
 
-    // Validate amount (should be 100 for ad removal)
-    if (parseFloat(amt) !== 100) {
-      console.log('Invalid amount:', amt, 'Expected: 100');
+    // Ensure refId has a default value
+    const referenceId = refId || 'default-ref-' + Date.now();
+
+    // Clean and validate amount (should be 100 for ad removal)
+    const cleanAmount = parseFloat(amt);
+    console.log('Amount validation:', { original: amt, cleaned: cleanAmount });
+    
+    if (isNaN(cleanAmount) || cleanAmount !== 100) {
+      console.log('Invalid amount:', amt, 'Cleaned:', cleanAmount, 'Expected: 100');
       return res.status(400).json({
         success: false,
         message: "Invalid payment amount"
@@ -32,7 +42,7 @@ export const verifyEsewaPayment = async (req, res) => {
 
     // Verify payment with eSewa (in production, you would call eSewa's verification API)
     // For now, we'll simulate the verification process
-    const isPaymentValid = await verifyWithEsewa(oid, amt, refId);
+    const isPaymentValid = await verifyWithEsewa(oid, amt, referenceId);
 
     if (!isPaymentValid) {
       return res.status(400).json({
@@ -42,8 +52,12 @@ export const verifyEsewaPayment = async (req, res) => {
     }
 
     // Update user's ad-free status
+    console.log('Looking for user with ID:', userId);
     const user = await User.findById(userId);
+    console.log('Found user:', user ? 'Yes' : 'No');
+    
     if (!user) {
+      console.log('User not found in database');
       return res.status(404).json({
         success: false,
         message: "User not found"
@@ -56,8 +70,8 @@ export const verifyEsewaPayment = async (req, res) => {
     user.paymentHistory = user.paymentHistory || [];
     user.paymentHistory.push({
       type: "ad_removal",
-      amount: amt,
-      esewaRefId: refId,
+      amount: cleanAmount,
+      esewaRefId: referenceId,
       transactionId: oid,
       date: new Date(),
       status: "completed"
@@ -88,9 +102,11 @@ export const verifyEsewaPayment = async (req, res) => {
 
   } catch (error) {
     console.error("Payment verification error:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
-      message: "Internal server error during payment verification"
+      message: "Internal server error during payment verification",
+      error: error.message
     });
   }
 };

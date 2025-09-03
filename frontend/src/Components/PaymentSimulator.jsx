@@ -31,10 +31,26 @@ const PaymentSimulator = () => {
     
     // Simulate payment processing delay
     setTimeout(() => {
-      const successUrl = new URL(paymentData.success_url);
+      // Create base URL without existing query parameters
+      const baseUrl = paymentData.success_url.split('?')[0];
+      const successUrl = new URL(baseUrl);
+      
+      // Add payment parameters
       successUrl.searchParams.set('oid', paymentData.transaction_uuid);
       successUrl.searchParams.set('amt', paymentData.total_amount);
       successUrl.searchParams.set('refId', `simulator-${Date.now()}`);
+      
+      // Add the encoded data parameter
+      const encodedData = btoa(JSON.stringify({
+        transaction_code: "000BOS2",
+        status: "COMPLETE",
+        total_amount: paymentData.total_amount,
+        transaction_uuid: paymentData.transaction_uuid,
+        product_code: "EPAYTEST",
+        signed_field_names: "transaction_code,status,total_amount,transaction_uuid,product_code,signed_field_names",
+        signature: "gptPTDms/cV16K7facgnhknKjCeewDfgCMoIwnJ7IDg="
+      }));
+      successUrl.searchParams.set('data', encodedData);
       
       window.location.href = successUrl.toString();
     }, 2000);
@@ -44,7 +60,10 @@ const PaymentSimulator = () => {
     setIsProcessing(true);
     
     setTimeout(() => {
-      const failureUrl = new URL(paymentData.failure_url);
+      // Create base URL without existing query parameters
+      const baseUrl = paymentData.failure_url.split('?')[0];
+      const failureUrl = new URL(baseUrl);
+      
       failureUrl.searchParams.set('oid', paymentData.transaction_uuid);
       failureUrl.searchParams.set('amt', paymentData.total_amount);
       
