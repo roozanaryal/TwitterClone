@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Avatar from "react-avatar";
 import { useState, useEffect } from "react";
 import Tweet from "./Tweet";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import useGetOtherUserProfile from "../hooks/useGetOtherUserProfile";
 import useAPICall from "../api/useAPICall";
 import FollowersModal from "./FollowersModal";

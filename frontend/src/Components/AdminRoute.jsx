@@ -1,28 +1,31 @@
 import { Navigate } from "react-router-dom";
-import { useAuthContext } from "../context/AuthContext";
+import PropTypes from "prop-types";
+import { useAuthContext } from "../hooks/useAuthContext";
 import Spinner from "./Spinner";
 
 const AdminRoute = ({ children }) => {
   const { authUser, authLoading } = useAuthContext();
   
-  console.log("AdminRoute - authUser:", authUser);
-  console.log("AdminRoute - authLoading:", authLoading);
-  console.log("AdminRoute - isAdmin:", authUser?.isAdmin);
+  // Debug logs removed for cleaner console
   
   if (authLoading) return <Spinner />;
   
   if (!authUser) {
-    console.log("AdminRoute - No auth user, redirecting to login");
+    // No auth user, redirecting to login
     return <Navigate to="/login" replace />;
   }
   
   if (!authUser.isAdmin) {
-    console.log("AdminRoute - User is not admin, redirecting to home");
+    // User is not admin, redirecting to home
     return <Navigate to="/" replace />;
   }
   
-  console.log("AdminRoute - Admin user confirmed, rendering children");
+  // Admin user confirmed, rendering children
   return children;
+};
+
+AdminRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default AdminRoute;

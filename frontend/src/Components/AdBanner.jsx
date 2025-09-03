@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { RxCross2 } from "react-icons/rx";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import useAPICall from "../api/useAPICall";
 
 const AdBanner = ({ onClose }) => {

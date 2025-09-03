@@ -1,4 +1,4 @@
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "./useAuthContext";
 import useAPICall from "../api/useAPICall";
 import { useNavigate } from "react-router-dom";
 

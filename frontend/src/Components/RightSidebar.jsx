@@ -3,7 +3,7 @@ import Avatar from "react-avatar";
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from 'prop-types';
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import RemoveAdsButton from "./RemoveAdsButton";
 
 // UserCard component for displaying user info with follow button

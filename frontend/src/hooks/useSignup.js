@@ -1,5 +1,5 @@
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "./useAuthContext";
 const useSignup = () => {
   const { setAuthUser } = useAuthContext();
   const callAPI = useAPICall();

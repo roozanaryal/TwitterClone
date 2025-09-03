@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaShieldAlt, FaCrown, FaTimes } from "react-icons/fa";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import CryptoJS from 'crypto-js';
 
 const RemoveAdsButton = () => {

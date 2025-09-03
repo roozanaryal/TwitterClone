@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import useAPICall from '../api/useAPICall.js';
 import AdBannerManager from './AdBannerManager.jsx';
-import { useAuthContext } from '../context/AuthContext.jsx';
+import { useAuthContext } from '../hooks/useAuthContext.js';
 import useLogout from '../hooks/useLogout.js';
 
 const AdminDashboard = () => {

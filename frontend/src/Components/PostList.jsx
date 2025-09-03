@@ -5,7 +5,7 @@ import useGetPost from "../hooks/useGetPost";
 import useLikePost from "../hooks/useLikePost";
 import useAddToBookmark from "../hooks/useAddToBookmark";
 import useComment from "../hooks/useComment";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import PropTypes from "prop-types";
 import Tweet from "./Tweet";
 

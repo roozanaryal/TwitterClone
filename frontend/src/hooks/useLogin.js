@@ -1,5 +1,5 @@
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "./useAuthContext";
 import { useNavigate } from "react-router-dom";
 
 const useLogin = () => {
@@ -24,8 +24,7 @@ const useLogin = () => {
         throw new Error("Invalid response from server");
       }
       
-      console.log("Login response:", data);
-      console.log("User isAdmin:", data.isAdmin);
+      // Debug logs removed for cleaner console
       
       // Store user data in localStorage and context
       localStorage.setItem("xCloneUser", JSON.stringify(data));
@@ -33,10 +32,10 @@ const useLogin = () => {
 
       // Redirect based on user role
       if (data.isAdmin) {
-        console.log("Redirecting admin user to /admin");
+        // Redirecting admin user
         navigate("/admin");
       } else {
-        console.log("Redirecting regular user to /");
+        // Redirecting regular user
         navigate("/");
       }
 

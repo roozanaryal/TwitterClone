@@ -1,4 +1,4 @@
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { useCallback } from "react";
 
 const baseUrl = "http://localhost:5000/api";

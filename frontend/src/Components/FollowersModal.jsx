@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import Avatar from "react-avatar";
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import PropTypes from "prop-types";
 
 const FollowersModal = ({ isOpen, onClose, userId, type, username }) => {

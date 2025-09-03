@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { IoClose } from "react-icons/io5";
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const EditProfileModal = ({ isOpen, onClose, user, onUserUpdate }) => {
   const [formData, setFormData] = useState({

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import PropTypes from "prop-types";
 // import { usePostFocus } from "../context/PostFocusContext";
 import useCreatePost from "../hooks/useCreatePost";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const CreatePost = ({ onPostCreated }) => {
   const inputRef = useRef(null);

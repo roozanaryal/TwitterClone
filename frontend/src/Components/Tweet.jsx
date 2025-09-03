@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import Avatar from "react-avatar";
 import { FaRegComment, FaHeart } from "react-icons/fa";
 import { CiHeart, CiBookmark } from "react-icons/ci";
-import { useState } from "react";
+import { useState, memo, useMemo, useCallback } from "react";
 import useAPICall from "../api/useAPICall";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 // Local time format helpers (kept inside to make component standalone)
 const formatTime = (dateString) => {
@@ -32,7 +32,7 @@ const formatTimeAgo = (dateString) => {
   return `${Math.floor(diffInSeconds / 2592000)}mo`;
 };
 
-const Tweet = ({
+const Tweet = memo(({
   post,
   authUserId,
   onToggleLike,
@@ -54,25 +54,27 @@ const Tweet = ({
   
   // Use auth user ID if not provided
   const userId = authUserId || authUser?._id;
-  const owner = localPost.postOwner || {};
-  const ownerName = owner.name || owner.fullName || owner.username || "Unknown User";
-  const ownerUsername = owner.username || "unknown";
-  const ownerAvatar = owner.profilePicture || owner.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(owner.fullName || owner.name || owner.username || "User")}&background=random`;
+  
+  // Memoized computed values
+  const ownerData = useMemo(() => {
+    const owner = localPost.postOwner || {};
+    return {
+      name: owner.name || owner.fullName || owner.username || "Unknown User",
+      username: owner.username || "unknown",
+      avatar: owner.profilePicture || owner.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(owner.fullName || owner.name || owner.username || "User")}&background=random`
+    };
+  }, [localPost.postOwner]);
 
-  const liked = localPost.likes?.includes(userId);
-  const bookmarked = localPost.bookmarks?.includes(userId);
+  const interactionState = useMemo(() => ({
+    liked: localPost.likes?.includes(userId),
+    bookmarked: localPost.bookmarks?.includes(userId)
+  }), [localPost.likes, localPost.bookmarks, userId]);
 
-  console.log('Tweet component debug:', {
-    postId: localPost._id,
-    userId,
-    enableInteractions,
-    liked,
-    bookmarked,
-    commentsCount: localPost.comments?.length || 0
-  });
+  // Use memoized values
+  const { liked, bookmarked } = interactionState;
 
   // Dynamic API handlers
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (!enableInteractions || !userId) return;
     
     try {
@@ -99,20 +101,18 @@ const Tweet = ({
     } catch (error) {
       console.error('Error toggling like:', error);
     }
-  };
+  }, [enableInteractions, userId, liked, localPost._id, callAPI, onToggleLike, onPostUpdate]);
 
-  const handleBookmark = async () => {
+  const handleBookmark = useCallback(async () => {
     if (!enableInteractions || !userId) {
-      console.log('Bookmark disabled:', { enableInteractions, userId });
+      // Bookmark disabled
       return;
     }
     
     try {
-      console.log('Bookmark action:', { bookmarked, postId: localPost._id });
       const endpoint = `bookmarks/${localPost._id}`;
       const method = bookmarked ? 'DELETE' : 'POST';
-      const response = await callAPI(endpoint, method);
-      console.log('Bookmark response:', response);
+      await callAPI(endpoint, method);
       
       // Update local state optimistically
       setLocalPost(prev => ({
@@ -141,30 +141,27 @@ const Tweet = ({
           : prev.bookmarks?.filter(id => id !== userId) || []
       }));
     }
-  };
+  }, [enableInteractions, userId, bookmarked, localPost._id, callAPI, onToggleBookmark, onPostUpdate]);
 
-  const handleToggleComment = () => {
+  const handleToggleComment = useCallback(() => {
     const newShowComment = !localShowComment;
     setLocalShowComment(newShowComment);
-    
-    // Call parent handler if provided
-    if (onToggleComment) {
-      onToggleComment();
-    }
-  };
+        // Call parent handler if provided
+      if (onToggleComment) {
+        onToggleComment();
+      }
+    }, [localShowComment, onToggleComment]);
 
-  const handleCommentSubmit = async () => {
+  const handleCommentSubmit = useCallback(async () => {
     if (!enableInteractions || !userId || !localCommentInput.trim()) {
-      console.log('Comment disabled:', { enableInteractions, userId, input: localCommentInput });
+      // Comment disabled
       return;
     }
     
     try {
-      console.log('Comment action:', { postId: localPost._id, comment: localCommentInput.trim() });
       const response = await callAPI(`tweets/comment/${localPost._id}`, 'POST', {
         comment: localCommentInput.trim()
       });
-      console.log('Comment response:', response);
       
       // Update local state with new comment
       setLocalPost(prev => ({
@@ -186,26 +183,25 @@ const Tweet = ({
     } catch (error) {
       console.error('Error submitting comment:', error);
     }
-  };
+  }, [enableInteractions, userId, localCommentInput, callAPI, localPost._id, onSubmitComment, onPostUpdate]);
 
-  const handleCommentChange = (value) => {
+  const handleCommentChange = useCallback((value) => {
     setLocalCommentInput(value);
-    
-    // Call parent handler if provided
-    if (onChangeComment) {
-      onChangeComment(value);
-    }
-  };
+        // Call parent handler if provided
+      if (onChangeComment) {
+        onChangeComment(value);
+      }
+    }, [onChangeComment]);
 
   return (
     <div className="border-b border-gray-200 w-full">
       <div className="flex p-4">
-        <Avatar src={ownerAvatar} size="40" round={true} />
+        <Avatar src={ownerData.avatar} size="40" round={true} />
         <div className="ml-2 flex-1">
           <div className="flex items-center ml-2">
-            <h1 className="font-bold">{ownerName}</h1>
+            <h1 className="font-bold">{ownerData.name}</h1>
             <p className="text-gray-500 text-sm ml-1">
-              @{ownerUsername} · {formatTime(localPost.createdAt)}
+              @{ownerData.username} · {formatTime(localPost.createdAt)}
             </p>
           </div>
           <div className="ml-2">
@@ -320,7 +316,9 @@ const Tweet = ({
       </div>
     </div>
   );
-};
+});
+
+Tweet.displayName = 'Tweet';
 
 Tweet.propTypes = {
   post: PropTypes.object.isRequired,
