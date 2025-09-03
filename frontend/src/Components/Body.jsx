@@ -10,6 +10,8 @@ import Bookmark from "./Bookmark";
 import BookmarkComponent from "./BookmarkComponent";
 import AdminDashboard from "./AdminDashboard";
 import AdminRoute from "./AdminRoute";
+import PaymentSuccess from "./PaymentSuccess";
+import PaymentFailure from "./PaymentFailure";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -55,6 +57,22 @@ const Body = () => {
         <AdminRoute>
           <AdminDashboard />
         </AdminRoute>
+      ),
+    },
+    {
+      path: "/payment/success",
+      element: (
+        <ProtectedRoute>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/payment/failure",
+      element: (
+        <ProtectedRoute>
+          <PaymentFailure />
+        </ProtectedRoute>
       ),
     },
   ]);

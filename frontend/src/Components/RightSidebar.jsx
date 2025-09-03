@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import PropTypes from 'prop-types';
 import useAPICall from "../api/useAPICall";
 import { useAuthContext } from "../context/AuthContext";
+import RemoveAdsButton from "./RemoveAdsButton";
 
 // UserCard component for displaying user info with follow button
 const UserCard = ({ user }) => {
@@ -149,6 +150,9 @@ const RightSidebar = () => {
                onChange={(e) => setSearchQuery(e.target.value)}
             />
          </div>
+
+         {/* Remove Ads Button */}
+         <RemoveAdsButton />
 
          {/* Search Results */}
          {searchQuery && (

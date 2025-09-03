@@ -72,6 +72,38 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  adFreeUntil: {
+    type: Date,
+    default: null,
+  },
+  paymentHistory: [{
+    type: {
+      type: String,
+      enum: ['ad_removal'],
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    esewaRefId: {
+      type: String,
+      required: true,
+    },
+    transactionId: {
+      type: String,
+      required: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    status: {
+      type: String,
+      enum: ['completed', 'failed', 'pending'],
+      default: 'pending',
+    },
+  }],
 });
 
 // Method to compare password
