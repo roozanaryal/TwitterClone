@@ -40,8 +40,8 @@ const PaymentSuccess = () => {
         });
 
         if (response.success) {
-          // Update user's ad-free status
-          const updatedUser = { ...authUser, showAds: false };
+          // Update user's ad-free status with complete user data from backend
+          const updatedUser = { ...authUser, ...response.user };
           setAuthUser(updatedUser);
           localStorage.setItem('xCloneUser', JSON.stringify(updatedUser));
           setVerificationStatus('success');
@@ -87,7 +87,7 @@ const PaymentSuccess = () => {
           
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h1>
           <p className="text-gray-600 mb-6">
-            Congratulations! You've successfully removed ads from your Twitter experience.
+            Congratulations! You&apos;ve successfully removed ads from your Twitter experience.
           </p>
 
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-4 text-white mb-6">
@@ -133,7 +133,7 @@ const PaymentSuccess = () => {
         
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Payment Verification Failed</h1>
         <p className="text-gray-600 mb-6">
-          We couldn't verify your payment. Please try again or contact support.
+          We couldn&apos;t verify your payment. Please try again or contact support.
         </p>
 
         <div className="space-y-3">
