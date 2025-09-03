@@ -12,6 +12,7 @@ import AdminDashboard from "./AdminDashboard";
 import AdminRoute from "./AdminRoute";
 import PaymentSuccess from "./PaymentSuccess";
 import PaymentFailure from "./PaymentFailure";
+import PaymentSimulator from "./PaymentSimulator";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -58,6 +59,10 @@ const Body = () => {
           <AdminDashboard />
         </AdminRoute>
       ),
+    },
+    {
+      path: "/payment/simulator",
+      element: <PaymentSimulator />,
     },
     {
       path: "/payment/success",

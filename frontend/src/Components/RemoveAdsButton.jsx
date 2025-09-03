@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaShieldAlt, FaCrown, FaTimes } from "react-icons/fa";
 import { useAuthContext } from "../context/AuthContext";
+import CryptoJS from 'crypto-js';
 
 const RemoveAdsButton = () => {
   const { authUser } = useAuthContext();
@@ -22,24 +23,40 @@ const RemoveAdsButton = () => {
       // Generate unique transaction UUID
       const transactionUuid = `ad-removal-${authUser._id}-${Date.now()}`;
       
-      // eSewa Test Environment Configuration
+      // eSewa v2 API Configuration
+      const amount = 100;
+      const tax_amount = 0;
+      const total_amount = amount + tax_amount;
+      const product_service_charge = 0;
+      const product_delivery_charge = 0;
+      const product_code = "EPAYTEST";
+      const success_url = `${window.location.origin}/payment/success?oid=${transactionUuid}&amt=${total_amount}`;
+      const failure_url = `${window.location.origin}/payment/failure?oid=${transactionUuid}&amt=${total_amount}`;
+      
+      // Generate signature for eSewa v2
+      const signed_field_names = "total_amount,transaction_uuid,product_code";
+      const secret_key = "8gBm/:&EnhH.1/q"; // eSewa test secret key
+      const message = `total_amount=${total_amount},transaction_uuid=${transactionUuid},product_code=${product_code}`;
+      const signature = CryptoJS.HmacSHA256(message, secret_key).toString(CryptoJS.enc.Base64);
+
       const paymentData = {
-        // Required fields for eSewa v2 test
-        amt: 100,
-        pdc: 0, // product_delivery_charge
-        psc: 0, // product_service_charge  
-        txAmt: 100, // total_amount (amt + pdc + psc)
-        tAmt: 100, // total_amount
-        pid: transactionUuid, // product_id/transaction_uuid
-        scd: "EPAYTEST", // merchant_code for test environment
-        su: `${window.location.origin}/payment/success?oid=${transactionUuid}&amt=100`, // success_url
-        fu: `${window.location.origin}/payment/failure?oid=${transactionUuid}&amt=100`, // failure_url
+        amount: amount,
+        tax_amount: tax_amount,
+        total_amount: total_amount,
+        transaction_uuid: transactionUuid,
+        product_code: product_code,
+        product_service_charge: product_service_charge,
+        product_delivery_charge: product_delivery_charge,
+        success_url: success_url,
+        failure_url: failure_url,
+        signed_field_names: signed_field_names,
+        signature: signature
       };
 
-      // Create form and submit to eSewa test environment
+      // Create form and submit to eSewa v2 API
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://uat.esewa.com.np/epay/main'; // Test environment URL
+      form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
 
       Object.keys(paymentData).forEach(key => {
         const input = document.createElement('input');
