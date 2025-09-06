@@ -4,7 +4,7 @@ import AdBanner from "../models/adBanner.model.js";
 export const getAdBanner = async (req, res) => {
   try {
     let adBanner = await AdBanner.findOne();
-    
+
     // If no ad banner exists, create default one
     if (!adBanner) {
       adBanner = new AdBanner();
@@ -13,19 +13,21 @@ export const getAdBanner = async (req, res) => {
 
     // Check if ad should be shown based on scheduling and limits
     const now = new Date();
-    const shouldShow = adBanner.isActive && 
-                      (!adBanner.isScheduled || (now >= adBanner.startDate && now <= adBanner.endDate)) &&
-                      (adBanner.impressions < adBanner.maxImpressions);
+    const shouldShow =
+      adBanner.isActive &&
+      (!adBanner.isScheduled ||
+        (now >= adBanner.startDate && now <= adBanner.endDate)) &&
+      adBanner.impressions < adBanner.maxImpressions;
 
     // If ad should be shown, increment impressions
-    if (shouldShow && req.query.increment === 'true') {
+    if (shouldShow && req.query.increment === "true") {
       adBanner.impressions += 1;
       await adBanner.save();
     }
-    
+
     res.status(200).json({
       ...adBanner.toObject(),
-      shouldShow
+      shouldShow,
     });
   } catch (error) {
     console.error("Error in getAdBanner controller:", error.message);
@@ -57,11 +59,11 @@ export const updateAdBanner = async (req, res) => {
       endDate,
       maxImpressions,
       isScheduled,
-      adminNotes
+      adminNotes,
     } = req.body;
 
     let adBanner = await AdBanner.findOne();
-    
+
     if (!adBanner) {
       adBanner = new AdBanner();
     }
@@ -92,10 +94,10 @@ export const updateAdBanner = async (req, res) => {
     if (adminNotes !== undefined) adBanner.adminNotes = adminNotes;
 
     await adBanner.save();
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: "Ad banner updated successfully",
-      adBanner 
+      adBanner,
     });
   } catch (error) {
     console.error("Error in updateAdBanner controller:", error.message);
@@ -109,10 +111,10 @@ export const resetAdBanner = async (req, res) => {
     await AdBanner.deleteMany({});
     const defaultAdBanner = new AdBanner();
     await defaultAdBanner.save();
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: "Ad banner reset to default values",
-      adBanner: defaultAdBanner 
+      adBanner: defaultAdBanner,
     });
   } catch (error) {
     console.error("Error in resetAdBanner controller:", error.message);
@@ -124,15 +126,15 @@ export const resetAdBanner = async (req, res) => {
 export const trackAdClick = async (req, res) => {
   try {
     const adBanner = await AdBanner.findOne();
-    
+
     if (adBanner) {
       adBanner.clicks += 1;
       await adBanner.save();
     }
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: "Click tracked successfully",
-      clicks: adBanner?.clicks || 0
+      clicks: adBanner?.clicks || 0,
     });
   } catch (error) {
     console.error("Error in trackAdClick controller:", error.message);
@@ -144,7 +146,7 @@ export const trackAdClick = async (req, res) => {
 export const getAdAnalytics = async (req, res) => {
   try {
     const adBanner = await AdBanner.findOne();
-    
+
     if (!adBanner) {
       return res.status(404).json({ error: "No ad banner found" });
     }
@@ -152,17 +154,28 @@ export const getAdAnalytics = async (req, res) => {
     const analytics = {
       impressions: adBanner.impressions,
       clicks: adBanner.clicks,
-      clickThroughRate: adBanner.impressions > 0 ? ((adBanner.clicks / adBanner.impressions) * 100).toFixed(2) : 0,
+      clickThroughRate:
+        adBanner.impressions > 0
+          ? ((adBanner.clicks / adBanner.impressions) * 100).toFixed(2)
+          : 0,
       isActive: adBanner.isActive,
       category: adBanner.category,
       priority: adBanner.priority,
       startDate: adBanner.startDate,
       endDate: adBanner.endDate,
       maxImpressions: adBanner.maxImpressions,
-      remainingImpressions: Math.max(0, adBanner.maxImpressions - adBanner.impressions),
-      daysRemaining: Math.max(0, Math.ceil((new Date(adBanner.endDate) - new Date()) / (1000 * 60 * 60 * 24)))
+      remainingImpressions: Math.max(
+        0,
+        adBanner.maxImpressions - adBanner.impressions
+      ),
+      daysRemaining: Math.max(
+        0,
+        Math.ceil(
+          (new Date(adBanner.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+        )
+      ),
     };
-    
+
     res.status(200).json(analytics);
   } catch (error) {
     console.error("Error in getAdAnalytics controller:", error.message);
@@ -174,17 +187,19 @@ export const getAdAnalytics = async (req, res) => {
 export const toggleAdStatus = async (req, res) => {
   try {
     const adBanner = await AdBanner.findOne();
-    
+
     if (!adBanner) {
       return res.status(404).json({ error: "No ad banner found" });
     }
 
     adBanner.isActive = !adBanner.isActive;
     await adBanner.save();
-    
-    res.status(200).json({ 
-      message: `Ad banner ${adBanner.isActive ? 'activated' : 'deactivated'} successfully`,
-      isActive: adBanner.isActive
+
+    res.status(200).json({
+      message: `Ad banner ${
+        adBanner.isActive ? "activated" : "deactivated"
+      } successfully`,
+      isActive: adBanner.isActive,
     });
   } catch (error) {
     console.error("Error in toggleAdStatus controller:", error.message);
