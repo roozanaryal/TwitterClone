@@ -71,13 +71,13 @@ export const removeBookmark = async (req, res) => {
     }
 
     // Remove from bookmarks
-    user.bookmarks = user.bookmarks.filter(id => id.toString() !== postId);
+    user.bookmarks = user.bookmarks.filter((id) => id.toString() !== postId);
     await user.save();
 
     // Also remove user from post's bookmarks array
     const post = await Post.findById(postId);
     if (post) {
-      post.bookmarks = post.bookmarks.filter(id => id.toString() !== userId);
+      post.bookmarks = post.bookmarks.filter((id) => id.toString() !== userId);
       await post.save();
     }
 
@@ -103,18 +103,18 @@ export const getBookmarks = async (req, res) => {
       populate: [
         {
           path: "postOwner",
-          select: "username name profilePicture"
+          select: "username name profilePicture",
         },
         {
           path: "comments",
           populate: {
             path: "postOwner",
-            select: "username name profilePicture"
-          }
-        }
-      ]
+            select: "username name profilePicture",
+          },
+        },
+      ],
     });
-    
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",

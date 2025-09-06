@@ -8,35 +8,46 @@ const ESEWA_MERCHANT_CODE = "EPAYTEST"; // Test merchant code
 // Verify eSewa payment
 export const verifyEsewaPayment = async (req, res) => {
   try {
-    console.log('Full request body:', req.body);
-    console.log('Request headers:', req.headers);
-    
+    console.log("Full request body:", req.body);
+    console.log("Request headers:", req.headers);
+
     const { oid, amt, refId } = req.body;
     const userId = req.user.id; // Get userId from authenticated user
 
-    console.log('Payment verification request:', { oid, amt, refId, userId });
-    
+    console.log("Payment verification request:", { oid, amt, refId, userId });
+
     // Validate required fields
     if (!oid || !amt || !userId) {
-      console.log('Missing required parameters:', { oid: !!oid, amt: !!amt, refId: !!refId, userId: !!userId });
+      console.log("Missing required parameters:", {
+        oid: !!oid,
+        amt: !!amt,
+        refId: !!refId,
+        userId: !!userId,
+      });
       return res.status(400).json({
         success: false,
-        message: "Missing required payment parameters"
+        message: "Missing required payment parameters",
       });
     }
 
     // Ensure refId has a default value
-    const referenceId = refId || 'default-ref-' + Date.now();
+    const referenceId = refId || "default-ref-" + Date.now();
 
     // Clean and validate amount (should be 100 for ad removal)
     const cleanAmount = parseFloat(amt);
-    console.log('Amount validation:', { original: amt, cleaned: cleanAmount });
-    
+    console.log("Amount validation:", { original: amt, cleaned: cleanAmount });
+
     if (isNaN(cleanAmount) || cleanAmount !== 100) {
-      console.log('Invalid amount:', amt, 'Cleaned:', cleanAmount, 'Expected: 100');
+      console.log(
+        "Invalid amount:",
+        amt,
+        "Cleaned:",
+        cleanAmount,
+        "Expected: 100"
+      );
       return res.status(400).json({
         success: false,
-        message: "Invalid payment amount"
+        message: "Invalid payment amount",
       });
     }
 
@@ -47,20 +58,20 @@ export const verifyEsewaPayment = async (req, res) => {
     if (!isPaymentValid) {
       return res.status(400).json({
         success: false,
-        message: "Payment verification failed"
+        message: "Payment verification failed",
       });
     }
 
     // Update user's ad-free status
-    console.log('Looking for user with ID:', userId);
+    console.log("Looking for user with ID:", userId);
     const user = await User.findById(userId);
-    console.log('Found user:', user ? 'Yes' : 'No');
-    
+    console.log("Found user:", user ? "Yes" : "No");
+
     if (!user) {
-      console.log('User not found in database');
+      console.log("User not found in database");
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
@@ -74,7 +85,7 @@ export const verifyEsewaPayment = async (req, res) => {
       esewaRefId: referenceId,
       transactionId: oid,
       date: new Date(),
-      status: "completed"
+      status: "completed",
     });
 
     await user.save();
@@ -96,17 +107,16 @@ export const verifyEsewaPayment = async (req, res) => {
         website: user.website,
         isAdmin: user.isAdmin,
         showAds: user.showAds,
-        adFreeUntil: user.adFreeUntil
-      }
+        adFreeUntil: user.adFreeUntil,
+      },
     });
-
   } catch (error) {
     console.error("Payment verification error:", error);
     console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Internal server error during payment verification",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -122,30 +132,31 @@ const verifyWithEsewa = async (oid, amt, refId) => {
     // For eSewa test environment verification
     const verificationData = {
       amt: amt,
-      rid: refId || 'test-ref-' + Date.now(),
+      rid: refId || "test-ref-" + Date.now(),
       pid: oid,
-      scd: "EPAYTEST" // Test merchant code from provided credentials
+      scd: "EPAYTEST", // Test merchant code from provided credentials
     };
 
     console.log("Verifying eSewa payment with data:", verificationData);
 
     try {
       // Call eSewa verification endpoint for test environment
-      const response = await fetch('https://uat.esewa.com.np/epay/transrec', {
-        method: 'POST',
+      const response = await fetch("https://uat.esewa.com.np/epay/transrec", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams(verificationData)
+        body: new URLSearchParams(verificationData),
       });
 
       const result = await response.text();
       console.log("eSewa verification response:", result);
-      
+
       // Check if verification was successful
       // eSewa returns "Success" in the response for successful transactions
-      const isSuccess = result.includes('Success') || result.includes('success');
-      
+      const isSuccess =
+        result.includes("Success") || result.includes("success");
+
       if (isSuccess) {
         console.log("eSewa payment verification successful");
         return true;
@@ -161,10 +172,11 @@ const verifyWithEsewa = async (oid, amt, refId) => {
       console.error("eSewa API call failed:", apiError);
       // For test environment, if API call fails, we'll still allow the transaction
       // This ensures the demo works even if eSewa test API is down
-      console.log("Allowing transaction due to test environment API unavailability");
+      console.log(
+        "Allowing transaction due to test environment API unavailability"
+      );
       return true;
     }
-
   } catch (error) {
     console.error("eSewa verification error:", error);
     return false;
@@ -175,12 +187,14 @@ const verifyWithEsewa = async (oid, amt, refId) => {
 export const getPaymentHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-    
-    const user = await User.findById(userId).select('paymentHistory adFreeUntil showAds');
+
+    const user = await User.findById(userId).select(
+      "paymentHistory adFreeUntil showAds"
+    );
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
@@ -188,14 +202,13 @@ export const getPaymentHistory = async (req, res) => {
       success: true,
       paymentHistory: user.paymentHistory || [],
       adFreeUntil: user.adFreeUntil,
-      showAds: user.showAds
+      showAds: user.showAds,
     });
-
   } catch (error) {
     console.error("Get payment history error:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };

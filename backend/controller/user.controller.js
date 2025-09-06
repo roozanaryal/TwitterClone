@@ -21,28 +21,34 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name && name.length > 50) {
-      return res.status(400).json({ error: "Name must be less than 50 characters" });
+      return res
+        .status(400)
+        .json({ error: "Name must be less than 50 characters" });
     }
 
     if (bio && bio.length > 160) {
-      return res.status(400).json({ error: "Bio must be less than 160 characters" });
+      return res
+        .status(400)
+        .json({ error: "Bio must be less than 160 characters" });
     }
 
     if (profilePicture && typeof profilePicture !== "string") {
-      return res.status(400).json({ error: "Profile picture must be a valid URL" });
+      return res
+        .status(400)
+        .json({ error: "Profile picture must be a valid URL" });
     }
 
     // Build update object
     const updateData = {};
     if (name !== undefined) updateData.name = name.trim();
     if (bio !== undefined) updateData.bio = bio.trim();
-    if (profilePicture !== undefined) updateData.profilePicture = profilePicture.trim();
+    if (profilePicture !== undefined)
+      updateData.profilePicture = profilePicture.trim();
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, select: "-password" }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      select: "-password",
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
@@ -300,7 +306,7 @@ export const searchUsers = async (req, res) => {
     const searchQuery = q.trim();
 
     // Get current user's following list
-    const currentUser = await User.findById(currentUserId).select('following');
+    const currentUser = await User.findById(currentUserId).select("following");
     const followingIds = currentUser.following || [];
 
     // Search users by username, fullName, or email
@@ -317,9 +323,11 @@ export const searchUsers = async (req, res) => {
       .lean(); // Convert to plain JavaScript objects
 
     // Add follow status to each user
-    const usersWithFollowStatus = users.map(user => ({
+    const usersWithFollowStatus = users.map((user) => ({
       ...user,
-      isFollowing: followingIds.some(id => id.toString() === user._id.toString())
+      isFollowing: followingIds.some(
+        (id) => id.toString() === user._id.toString()
+      ),
     }));
 
     res.status(200).json({
@@ -364,15 +372,15 @@ export const getMyProfile = async (req, res) => {
 export const getUserFollowers = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     const user = await User.findById(userId)
-      .populate('followers', '-password')
-      .select('followers');
-    
+      .populate("followers", "-password")
+      .select("followers");
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.status(200).json({ users: user.followers });
   } catch (error) {
     console.error("Error in getUserFollowers: ", error.message);
@@ -384,15 +392,15 @@ export const getUserFollowers = async (req, res) => {
 export const getUserFollowing = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     const user = await User.findById(userId)
-      .populate('following', '-password')
-      .select('following');
-    
+      .populate("following", "-password")
+      .select("following");
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.status(200).json({ users: user.following });
   } catch (error) {
     console.error("Error in getUserFollowing: ", error.message);
@@ -404,16 +412,16 @@ export const getUserFollowing = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const currentUserId = req.user._id;
-    
+
     // Get all users except the current admin user
     const users = await User.find({ _id: { $ne: currentUserId } })
-      .select('-password')
+      .select("-password")
       .sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
       users,
-      total: users.length
+      total: users.length,
     });
   } catch (error) {
     console.error("Error in getAllUsers: ", error.message);
@@ -429,7 +437,9 @@ export const toggleAdminStatus = async (req, res) => {
 
     // Prevent modifying your own admin status
     if (id === currentUserId) {
-      return res.status(400).json({ error: "You cannot change your own admin status" });
+      return res
+        .status(400)
+        .json({ error: "You cannot change your own admin status" });
     }
 
     const user = await User.findById(id);
@@ -445,7 +455,9 @@ export const toggleAdminStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `User ${user.username} is now ${user.isAdmin ? 'an admin' : 'a regular user'}`,
+      message: `User ${user.username} is now ${
+        user.isAdmin ? "an admin" : "a regular user"
+      }`,
       user: sanitized,
     });
   } catch (error) {
@@ -462,7 +474,9 @@ export const deleteUserById = async (req, res) => {
 
     // Prevent deleting yourself
     if (id === currentUserId) {
-      return res.status(400).json({ error: "You cannot delete your own account" });
+      return res
+        .status(400)
+        .json({ error: "You cannot delete your own account" });
     }
 
     const user = await User.findById(id);
@@ -474,7 +488,9 @@ export const deleteUserById = async (req, res) => {
     await Post.deleteMany({ postOwner: user._id });
 
     // Delete notifications related to this user (as sender or receiver)
-    await Notification.deleteMany({ $or: [{ user: user._id }, { fromUser: user._id }] });
+    await Notification.deleteMany({
+      $or: [{ user: user._id }, { fromUser: user._id }],
+    });
 
     // Remove the user document
     await User.findByIdAndDelete(user._id);

@@ -9,7 +9,11 @@ export const getDashboardStats = async (req, res) => {
   try {
     // Get current date for time-based queries
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
     const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -17,43 +21,47 @@ export const getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const adminUsers = await User.countDocuments({ isAdmin: true });
     const regularUsers = totalUsers - adminUsers;
-    const newUsersToday = await User.countDocuments({ 
-      createdAt: { $gte: startOfDay } 
+    const newUsersToday = await User.countDocuments({
+      createdAt: { $gte: startOfDay },
     });
-    const newUsersThisWeek = await User.countDocuments({ 
-      createdAt: { $gte: startOfWeek } 
+    const newUsersThisWeek = await User.countDocuments({
+      createdAt: { $gte: startOfWeek },
     });
-    const newUsersThisMonth = await User.countDocuments({ 
-      createdAt: { $gte: startOfMonth } 
+    const newUsersThisMonth = await User.countDocuments({
+      createdAt: { $gte: startOfMonth },
     });
 
     // Post statistics
     const totalPosts = await Post.countDocuments();
-    const postsToday = await Post.countDocuments({ 
-      createdAt: { $gte: startOfDay } 
+    const postsToday = await Post.countDocuments({
+      createdAt: { $gte: startOfDay },
     });
-    const postsThisWeek = await Post.countDocuments({ 
-      createdAt: { $gte: startOfWeek } 
+    const postsThisWeek = await Post.countDocuments({
+      createdAt: { $gte: startOfWeek },
     });
-    const postsThisMonth = await Post.countDocuments({ 
-      createdAt: { $gte: startOfMonth } 
+    const postsThisMonth = await Post.countDocuments({
+      createdAt: { $gte: startOfMonth },
     });
 
     // Comment statistics
     const totalComments = await Comment.countDocuments();
-    const commentsToday = await Comment.countDocuments({ 
-      createdAt: { $gte: startOfDay } 
+    const commentsToday = await Comment.countDocuments({
+      createdAt: { $gte: startOfDay },
     });
 
     // Engagement statistics
     const totalLikes = await Post.aggregate([
       { $project: { likesCount: { $size: { $ifNull: ["$likes", []] } } } },
-      { $group: { _id: null, total: { $sum: "$likesCount" } } }
+      { $group: { _id: null, total: { $sum: "$likesCount" } } },
     ]);
 
     const totalBookmarks = await Post.aggregate([
-      { $project: { bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } } } },
-      { $group: { _id: null, total: { $sum: "$bookmarksCount" } } }
+      {
+        $project: {
+          bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$bookmarksCount" } } },
     ]);
 
     // Most active users (by posts)
@@ -61,13 +69,13 @@ export const getDashboardStats = async (req, res) => {
       { $group: { _id: "$postOwner", postCount: { $sum: 1 } } },
       { $sort: { postCount: -1 } },
       { $limit: 5 },
-      { 
+      {
         $lookup: {
           from: "users",
           localField: "_id",
           foreignField: "_id",
-          as: "user"
-        }
+          as: "user",
+        },
       },
       { $unwind: "$user" },
       {
@@ -77,9 +85,9 @@ export const getDashboardStats = async (req, res) => {
           username: "$user.username",
           name: "$user.name",
           profilePicture: "$user.profilePicture",
-          postCount: 1
-        }
-      }
+          postCount: 1,
+        },
+      },
     ]);
 
     // Recent activity (last 10 posts)
@@ -94,21 +102,25 @@ export const getDashboardStats = async (req, res) => {
       Array.from({ length: 7 }, async (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
-        const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const startOfDay = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate()
+        );
         const endOfDay = new Date(startOfDay);
         endOfDay.setDate(endOfDay.getDate() + 1);
 
         const users = await User.countDocuments({
-          createdAt: { $gte: startOfDay, $lt: endOfDay }
+          createdAt: { $gte: startOfDay, $lt: endOfDay },
         });
         const posts = await Post.countDocuments({
-          createdAt: { $gte: startOfDay, $lt: endOfDay }
+          createdAt: { $gte: startOfDay, $lt: endOfDay },
         });
 
         return {
-          date: startOfDay.toISOString().split('T')[0],
+          date: startOfDay.toISOString().split("T")[0],
           users,
-          posts
+          posts,
         };
       })
     );
@@ -122,24 +134,24 @@ export const getDashboardStats = async (req, res) => {
           regular: regularUsers,
           newToday: newUsersToday,
           newThisWeek: newUsersThisWeek,
-          newThisMonth: newUsersThisMonth
+          newThisMonth: newUsersThisMonth,
         },
         posts: {
           total: totalPosts,
           today: postsToday,
           thisWeek: postsThisWeek,
-          thisMonth: postsThisMonth
+          thisMonth: postsThisMonth,
         },
         engagement: {
           totalComments,
           commentsToday,
           totalLikes: totalLikes[0]?.total || 0,
-          totalBookmarks: totalBookmarks[0]?.total || 0
+          totalBookmarks: totalBookmarks[0]?.total || 0,
         },
         mostActiveUsers,
         recentPosts,
-        growthData
-      }
+        growthData,
+      },
     });
   } catch (error) {
     console.error("Error in getDashboardStats:", error.message);
@@ -151,12 +163,13 @@ export const getDashboardStats = async (req, res) => {
 export const getSystemHealth = async (req, res) => {
   try {
     const dbStatus = mongoose.connection.readyState;
-    const dbStatusText = {
-      0: 'disconnected',
-      1: 'connected',
-      2: 'connecting',
-      3: 'disconnecting'
-    }[dbStatus] || 'unknown';
+    const dbStatusText =
+      {
+        0: "disconnected",
+        1: "connected",
+        2: "connecting",
+        3: "disconnecting",
+      }[dbStatus] || "unknown";
 
     const memoryUsage = process.memoryUsage();
     const uptime = process.uptime();
@@ -166,18 +179,18 @@ export const getSystemHealth = async (req, res) => {
       health: {
         database: {
           status: dbStatusText,
-          connected: dbStatus === 1
+          connected: dbStatus === 1,
         },
         server: {
           uptime: Math.floor(uptime),
           memoryUsage: {
             rss: Math.round(memoryUsage.rss / 1024 / 1024),
             heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
-            heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024)
-          }
+            heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+          },
         },
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error("Error in getSystemHealth:", error.message);
@@ -197,12 +210,12 @@ export const getUserAnalytics = async (req, res) => {
       {
         $group: {
           _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
           },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     // User engagement levels
@@ -214,8 +227,8 @@ export const getUserAnalytics = async (req, res) => {
           followersCount: { $size: { $ifNull: ["$followers", []] } },
           followingCount: { $size: { $ifNull: ["$following", []] } },
           postsCount: { $size: { $ifNull: ["$posts", []] } },
-          bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } }
-        }
+          bookmarksCount: { $size: { $ifNull: ["$bookmarks", []] } },
+        },
       },
       {
         $addFields: {
@@ -223,21 +236,21 @@ export const getUserAnalytics = async (req, res) => {
             $add: [
               "$followersCount",
               { $multiply: ["$postsCount", 2] },
-              "$bookmarksCount"
-            ]
-          }
-        }
+              "$bookmarksCount",
+            ],
+          },
+        },
       },
       { $sort: { engagementScore: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
 
     res.status(200).json({
       success: true,
       analytics: {
         registrationTrend,
-        topEngagedUsers: userEngagement
-      }
+        topEngagedUsers: userEngagement,
+      },
     });
   } catch (error) {
     console.error("Error in getUserAnalytics:", error.message);
@@ -253,8 +266,8 @@ export const getContentStats = async (req, res) => {
       {
         $project: {
           length: { $strLenCP: { $ifNull: ["$description", ""] } },
-          createdAt: 1
-        }
+          createdAt: 1,
+        },
       },
       {
         $bucket: {
@@ -263,10 +276,10 @@ export const getContentStats = async (req, res) => {
           default: "280+",
           output: {
             count: { $sum: 1 },
-            avgLength: { $avg: "$length" }
-          }
-        }
-      }
+            avgLength: { $avg: "$length" },
+          },
+        },
+      },
     ]);
 
     // Most liked posts
@@ -277,8 +290,8 @@ export const getContentStats = async (req, res) => {
           postOwner: 1,
           likesCount: { $size: { $ifNull: ["$likes", []] } },
           commentsCount: { $size: { $ifNull: ["$comments", []] } },
-          createdAt: 1
-        }
+          createdAt: 1,
+        },
       },
       { $sort: { likesCount: -1 } },
       { $limit: 5 },
@@ -287,8 +300,8 @@ export const getContentStats = async (req, res) => {
           from: "users",
           localField: "postOwner",
           foreignField: "_id",
-          as: "owner"
-        }
+          as: "owner",
+        },
       },
       { $unwind: "$owner" },
       {
@@ -300,18 +313,18 @@ export const getContentStats = async (req, res) => {
           owner: {
             username: 1,
             name: 1,
-            profilePicture: 1
-          }
-        }
-      }
+            profilePicture: 1,
+          },
+        },
+      },
     ]);
 
     res.status(200).json({
       success: true,
       content: {
         postLengthDistribution,
-        topPosts
-      }
+        topPosts,
+      },
     });
   } catch (error) {
     console.error("Error in getContentStats:", error.message);
@@ -323,14 +336,14 @@ export const getContentStats = async (req, res) => {
 export const toggleUserAds = async (req, res) => {
   try {
     const { id: userId } = req.params;
-    
+
     console.log("Toggle ads request for user ID:", userId);
-    
+
     if (!userId) {
       console.log("No user ID provided");
       return res.status(400).json({ error: "User ID is required" });
     }
-    
+
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       console.log("Invalid user ID format:", userId);
       return res.status(400).json({ error: "Invalid user ID format" });
@@ -343,12 +356,12 @@ export const toggleUserAds = async (req, res) => {
     }
 
     console.log("Current user showAds value:", user.showAds);
-    
+
     // Handle undefined showAds field (set default to true if undefined)
     if (user.showAds === undefined) {
       user.showAds = true;
     }
-    
+
     // Toggle the showAds field
     user.showAds = !user.showAds;
     await user.save();
@@ -357,19 +370,21 @@ export const toggleUserAds = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Ads ${user.showAds ? 'enabled' : 'disabled'} for user @${user.username}`,
+      message: `Ads ${user.showAds ? "enabled" : "disabled"} for user @${
+        user.username
+      }`,
       user: {
         _id: user._id,
         username: user.username,
         name: user.name,
-        showAds: user.showAds
-      }
+        showAds: user.showAds,
+      },
     });
   } catch (error) {
     console.error("Error in toggleUserAds:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Internal server error",
-      details: error.message 
+      details: error.message,
     });
   }
 };

@@ -73,8 +73,8 @@ export const getPosts = async (req, res) => {
           path: "comments",
           populate: {
             path: "postOwner",
-            select: "username name profilePicture"
-          }
+            select: "username name profilePicture",
+          },
         })
         .sort({ createdAt: -1 })
         .limit(20);
@@ -86,8 +86,8 @@ export const getPosts = async (req, res) => {
           path: "comments",
           populate: {
             path: "postOwner",
-            select: "username name profilePicture"
-          }
+            select: "username name profilePicture",
+          },
         })
         .sort({ createdAt: -1 })
         .limit(20);
@@ -125,8 +125,8 @@ export const getFollowingFeed = async (req, res) => {
         path: "comments",
         populate: {
           path: "postOwner",
-          select: "username name profilePicture"
-        }
+          select: "username name profilePicture",
+        },
       })
       .sort({ createdAt: -1 })
       .limit(20);
@@ -154,8 +154,8 @@ export const getMyPosts = async (req, res) => {
         path: "comments",
         populate: {
           path: "postOwner",
-          select: "username name profilePicture"
-        }
+          select: "username name profilePicture",
+        },
       })
       .sort({ createdAt: -1 })
       .limit(20);
@@ -183,8 +183,8 @@ export const getOtherUserPosts = async (req, res) => {
         path: "comments",
         populate: {
           path: "postOwner",
-          select: "username name profilePicture"
-        }
+          select: "username name profilePicture",
+        },
       })
       .sort({ createdAt: -1 })
       .limit(20);
@@ -224,15 +224,15 @@ export const likePost = async (req, res) => {
     // Add user to likes array
     post.likes.push(userId);
     await post.save();
-    
+
     // Create notification for post owner (if it's not their own post)
     if (post.postOwner.toString() !== userId) {
       const postOwner = await User.findById(post.postOwner);
       const liker = await User.findById(userId);
-      
+
       if (postOwner && liker) {
         const message = `${liker.username} liked your post`;
-        
+
         const notification = new Notification({
           user: post.postOwner,
           fromUser: userId,
@@ -240,7 +240,7 @@ export const likePost = async (req, res) => {
           message: message,
           relatedPost: postId,
         });
-        
+
         await notification.save();
       }
     }
@@ -281,7 +281,7 @@ export const unlikePost = async (req, res) => {
     // Remove user from likes array
     post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
     await post.save();
-    
+
     // Optionally remove notification (not implemented for simplicity)
 
     res.status(200).json({
@@ -385,15 +385,15 @@ export const addComment = async (req, res) => {
     await newComment.save();
     post.comments.push(newComment._id);
     await post.save();
-    
+
     // Create notification for post owner (if it's not their own post)
     if (post.postOwner.toString() !== userId) {
       const postOwner = await User.findById(post.postOwner);
       const commenter = await User.findById(userId);
-      
+
       if (postOwner && commenter) {
         const message = `${commenter.username} commented on your post`;
-        
+
         const notification = new Notification({
           user: post.postOwner,
           fromUser: userId,
@@ -402,11 +402,11 @@ export const addComment = async (req, res) => {
           relatedPost: postId,
           relatedComment: newComment._id,
         });
-        
+
         await notification.save();
       }
     }
-    
+
     res.status(200).json({
       message: "Comment added successfully",
       comment: newComment,

@@ -76,11 +76,11 @@ export const login = async (req, res) => {
         message: "Invalid username or password",
       });
     }
-    
+
     console.log("Found user:", {
       username: user.username,
       isAdmin: user.isAdmin,
-      hasIsAdminField: user.hasOwnProperty('isAdmin')
+      hasIsAdminField: user.hasOwnProperty("isAdmin"),
     });
 
     const isPasswordCorrect = await bcrypt.compare(password, user?.password);
@@ -92,7 +92,7 @@ export const login = async (req, res) => {
     console.log("User logging in:", {
       id: user._id,
       username: user.username,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
     });
 
     const token = generateToken(user._id);
@@ -125,14 +125,14 @@ export const logout = (req, res) => {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      message: "Logged out successfully" 
+      message: "Logged out successfully",
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: "Internal Server Error" 
+      message: "Internal Server Error",
     });
   }
 };
