@@ -18,16 +18,30 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    // Basic validation
+    if (!username.trim() || !password) {
+      setError("Please enter both username and password");
+      return;
+    }
+
     try {
       if (isLogin) {
-        // Login hook now handles navigation based on user role
+        console.log('Attempting login with:', { username });
         await login(username, password);
       } else {
+        if (!name?.trim() || !email?.trim()) {
+          setError("All fields are required for signup");
+          return;
+        }
+        console.log('Attempting signup with:', { username, email });
         await signup({ name, username, password, email });
-        navigate("/"); // Regular users go to home after signup
+        navigate("/");
       }
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      console.error('Auth error:', err);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to authenticate. Please try again.";
+      setError(errorMessage);
     }
   };
 

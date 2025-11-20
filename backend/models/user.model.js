@@ -112,6 +112,21 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.default.compare(enteredPassword, this.password);
 };
 
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const bcrypt = await import('bcryptjs');
+    const salt = await bcrypt.default.genSalt(10);
+    this.password = await bcrypt.default.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Indexes for efficient queries
 userSchema.index({ followers: 1 });
 userSchema.index({ following: 1 });

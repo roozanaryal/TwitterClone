@@ -5,29 +5,39 @@ import { generateToken } from "../utils/generateToken.js";
 export const signup = async (req, res) => {
   try {
     const { name, username, password, email } = req.body;
-    if (!name || !username || !password || !email || !req.body) {
+    if (!name || !username || !password || !email) {
       return res.status(400).json({
         message: "All fields are required",
-        error: error.message,
+        success: false
       });
     }
 
-    const existingUser = await User.findOne({ username });
+    // Check if username or email already exists
+    const existingUser = await User.findOne({ 
+      $or: [
+        { username: { $regex: new RegExp(`^${username.trim()}$`, 'i') } },
+        { email: email.toLowerCase().trim() }
+      ]
+    });
+
     if (existingUser) {
+      const field = existingUser.username.toLowerCase() === username.toLowerCase().trim() ? 'username' : 'email';
       return res.status(400).json({
-        message: "Username already exists",
+        message: `${field === 'username' ? 'Username' : 'Email'} already exists`,
+        field,
+        success: false
       });
     }
-    const profilePic = `http://avatar.iran.liara.run/public/boy?${username}`;
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const profilePic = `https://avatar.iran.liara.run/public/boy?username=${username.trim()}`;
+    
+    // Create user with plain password - the pre-save hook will hash it
     const newUser = new User({
-      name,
-      username,
-      password: hashedPassword,
+      name: name.trim(),
+      username: username.trim().toLowerCase(),
+      password: password, // Will be hashed by pre-save hook
+      email: email.toLowerCase().trim(),
       profilePic,
-      email,
     });
 
     if (newUser) {
@@ -62,29 +72,35 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    console.log('Login attempt with:', { username: req.body.username });
     const { username, password } = req.body;
 
     if (!username || !password) {
+      console.log('Missing fields:', { username: !!username, password: '***' });
       return res.status(400).json({
         message: "All fields are required",
       });
     }
 
-    const user = await User.findOne({ username });
+    console.log('Looking for user in database...');
+    const user = await User.findOne({ 
+      username: { $regex: new RegExp(`^${username.trim()}$`, 'i') } 
+    });
+    
     if (!user) {
+      console.log('User not found:', username);
       return res.status(400).json({
         message: "Invalid username or password",
       });
     }
 
-    console.log("Found user:", {
-      username: user.username,
-      isAdmin: user.isAdmin,
-      hasIsAdminField: user.hasOwnProperty("isAdmin"),
-    });
-
-    const isPasswordCorrect = await bcrypt.compare(password, user?.password);
+    console.log('User found, checking password...');
+    
+    // Use the model's matchPassword method for consistent comparison
+    const isPasswordCorrect = await user.matchPassword(password);
+    
     if (!isPasswordCorrect) {
+      console.log('Incorrect password for user:', username);
       return res.status(400).json({
         message: "Invalid username or password",
       });

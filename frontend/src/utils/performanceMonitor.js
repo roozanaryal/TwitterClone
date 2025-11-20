@@ -10,7 +10,7 @@ export class PerformanceMonitor {
     const start = this.measurements.get(name);
     if (start) {
       const duration = performance.now() - start;
-      console.log(`⚡ ${name}: ${duration.toFixed(2)}ms`);
+      console.log(`${name}: ${duration.toFixed(2)}ms`);
       this.measurements.delete(name);
       return duration;
     }
@@ -32,7 +32,7 @@ export class PerformanceMonitor {
   static logRenderCount(componentName) {
     const renderCount = React.useRef(0);
     renderCount.current += 1;
-    
+
     React.useEffect(() => {
       console.log(`🔄 ${componentName} rendered ${renderCount.current} times`);
     });
@@ -41,8 +41,8 @@ export class PerformanceMonitor {
 
 // Web Vitals monitoring
 export const measureWebVitals = () => {
-  if (typeof window !== 'undefined') {
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+  if (typeof window !== "undefined") {
+    import("web-vitals").then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
       getCLS(console.log);
       getFID(console.log);
       getFCP(console.log);

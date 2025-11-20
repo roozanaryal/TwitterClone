@@ -10,34 +10,44 @@ const useLogin = () => {
   const login = async (username, password) => {
     try {
       // Input validation
-      if (!username.trim() || !password) {
-        throw new Error("Please fill in all fields");
+      if (!username?.trim() || !password) {
+        throw new Error("Please enter both username and password");
       }
 
-      const data = await callAPI("/auth/login", "POST", {
-        username,
-        password,
-      }, { skipAuth: true });
-
-      // Verify that we received the expected user data
-      if (!data || !data._id) {
-        throw new Error("Invalid response from server");
-      }
+      console.log('Sending login request for username:', username);
       
-      // Debug logs removed for cleaner console
+      const data = await callAPI("/auth/login", "POST", {
+        username: username.trim().toLowerCase(),
+        password,
+      }, { 
+        skipAuth: true,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      console.log('Login response:', data);
+      
+      if (!data || !data._id) {
+        console.error('Invalid response data:', data);
+        throw new Error("Invalid response from server. Please try again.");
+      }
       
       // Store user data in localStorage and context
       localStorage.setItem("xCloneUser", JSON.stringify(data));
       setAuthUser(data);
+      console.log('User authenticated successfully:', { id: data._id, username: data.username });
 
-      // Redirect based on user role
-      if (data.isAdmin) {
-        // Redirecting admin user
-        navigate("/admin");
-      } else {
-        // Redirecting regular user
-        navigate("/");
-      }
+      // Add a small delay before redirecting to ensure state is updated
+      setTimeout(() => {
+        if (data.isAdmin) {
+          console.log('Redirecting to admin dashboard');
+          navigate("/admin");
+        } else {
+          console.log('Redirecting to home');
+          navigate("/");
+        }
+      }, 100);
 
       // Return the user data in case it's needed
       return data;
